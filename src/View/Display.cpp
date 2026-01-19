@@ -14,36 +14,30 @@ int Display::visualRowsNeeded(size_t line_length) {
     if (line_length == 0) {
         return 1;
     }
-    // bool has_partial_line = line_length % (screenWidth() - 1) != 0;
 
-    // return line_length / screenWidth() + (has_partial_line? 1 : 0);
     int lines_needed = (line_length + screenWidth() - 1) / screenWidth();
     return lines_needed + (line_length % screenWidth() == 0);
 }
-    
 
- 
-void Display::renderCursor(size_t visual_row_of_cursor) {
-    size_t cursor_row = m_controller.getCursorRow();
-    size_t cursor_column = m_controller.getCursorColumn();
-
-    size_t screen_width = static_cast<size_t>(getmaxx(stdscr));
-    // DEBUG HELPER
-    //mvprintw(screenHeight() - 2, 0, "cursor at (%zu/%zu) (sw = %zu)", cursor_row, cursor_column, screen_width);
-    
-    while (cursor_column >= screen_width) {
-        cursor_column -= screen_width;
-        cursor_row++;
-    }
-    
-
-    
-    move(visual_row_of_cursor, cursor_column);
-    curs_set(2);
+void Display::renderEmptyLine(int& visual_row) {
+    mvprintw(visual_row, 0, "~");
+    visual_row++;
 }
 
-void Display::render() {
-    clear();
+int Display::renderLine(int& visual_row, int logical_line_index) {
+    int visual_row_of_cursor = 0;
+    const std::string& line = m_controller.getLine(logical_line_index);
+    mvprintw(visual_row, 0, "%s", line.c_str());
+    if (m_controller.getCursorRow() == logical_line_index) {
+        visual_row_of_cursor = visual_row + visualRowsNeeded(m_controller.getCursorColumn()) - 1;
+    }
+    
+    visual_row += TextFile::visualLinesNeeded(line.length(), screenWidth());
+
+    return visual_row_of_cursor;
+}
+
+int Display::renderText() {
     Position first_visible_char = m_controller.getFirstVisibleChar(screenWidth(), screenHeight());
 
     const std::string& first_visible_line = m_controller.getPartialLine(first_visible_char);
@@ -55,43 +49,42 @@ void Display::render() {
     }
 
     int logical_line_index = first_visible_char.row + 1;
-    for (int visual_row = visualRowsNeeded(first_visible_line.length());
-        visual_row < screenHeight();) {
+    int visual_row = TextFile::visualLinesNeeded(first_visible_line.length(), screenWidth());
 
+    while (visual_row < screenHeight()) {
         if (logical_line_index >= m_controller.getLineCount()) {
-            mvprintw(visual_row, 0, "~");
-            visual_row++;
+            renderEmptyLine(visual_row);
+            continue;
         }
-        else {
-            const std::string& line = m_controller.getLine(logical_line_index);
-            mvprintw(visual_row, 0, "%s", line.c_str());
-            if (m_controller.getCursorRow() == logical_line_index) {
-                visual_row_of_cursor = visual_row + visualRowsNeeded(m_controller.getCursorColumn()) - 1;
-            }
-            
-            visual_row += visualRowsNeeded(line.length());
-            logical_line_index++;
-        }
+        
+        int temp = renderLine(visual_row, logical_line_index);
+        if (temp != 0) visual_row_of_cursor = temp;
+
+        logical_line_index++;
     }
 
-    // for (int visual_row = 0; visual_row < screenHeight();) {
-    //     if (logical_line_index >= m_controller.getLineCount()) {
-    //         mvprintw(visual_row, 0, "~");
-    //         visual_row++;
-    //     }
-    //     else {
-    //         const std::string& line = m_controller.getLine(logical_line_index);
-    //         mvprintw(visual_row, 0, "%s", line.c_str());
-    //         if (m_controller.getCursorRow() == logical_line_index) {
-    //             visual_row_of_cursor = visual_row + visualRowsNeeded(m_controller.getCursorColumn()) - 1;
-    //         }
-            
-    //         visual_row += visualRowsNeeded(line.length());
-    //         logical_line_index++;
-    //     }
+    return visual_row_of_cursor;
+}
+ 
+void Display::renderCursor(size_t visual_row_of_cursor) {
+    int cursor_column = m_controller.getCursorColumn();
+    
+    // DEBUG HELPER
+    //size_t cursor_row = m_controller.getCursorRow();
+    //mvprintw(screenHeight() - 2, 0, "cursor at (%zu/%zu) (sw = %zu)", cursor_row, cursor_column, screenWidth());
+    
+    while (cursor_column >= screenWidth()) {
+        cursor_column -= screenWidth();
+    }
+    
+    move(visual_row_of_cursor, cursor_column);
+    curs_set(2);
+}
 
-    // }
+void Display::render() {
+    clear();
 
+    int visual_row_of_cursor = renderText();
     renderCursor(visual_row_of_cursor);
 
     refresh();
