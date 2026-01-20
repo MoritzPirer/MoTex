@@ -20,31 +20,31 @@ private:
     Cursor m_cursor;
     
     bool isLastVisualLineOfLine(int screen_width);
-    int calculateVisualLineOfCursor(int screen_width) const;
-
+    
     Position skipOffscreenLines(int offscreen_visual_lines, int screen_width) const;
-public:
+    public:
     EditorState() {
         FileHandler f;
         m_file = f.openFile("test.txt");
     }
-
+    
     EditorState(const EditorState&) = default;
     ~EditorState() = default;
-
+    
     const Cursor& getCursor() const { return m_cursor; }
-
+    
     void moveCursorUp(int screen_width);
     void moveCursorLeft();
     void moveCursorDown(int screen_width);
     void moveCursorRight();
-
+    
     Position getFirstVisibleChar(int screen_width, int screen_height);
-
+    
     size_t getLineCount() const { return m_file.getLineCount(); }
-
+    
     std::string getPartialLine(Position start);
     const std::string& getLine(size_t row) const { return m_file.getLine(row); }
+    int calculateVisualLineOfCursor(int screen_width) const;
 };
 
 #endif //EDITOR_STATE_HPP

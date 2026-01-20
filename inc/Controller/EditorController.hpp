@@ -28,6 +28,8 @@ public:
     Position getFirstVisibleChar(int screen_width, int screen_height);
     std::string getPartialLine(Position start);
     const std::string& getLine(size_t row) const;
+
+    int screenLineOfCursor(int screen_width, int screen_height);
 };
 
 #endif //EDITOR_CONTROLLER_HPP

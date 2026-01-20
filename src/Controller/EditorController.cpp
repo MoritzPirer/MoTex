@@ -56,3 +56,10 @@ std::string EditorController::getPartialLine(Position start) {
 const std::string& EditorController::getLine(size_t row) const {
     return m_state.getLine(row);
 }
+
+int EditorController::screenLineOfCursor(int screen_width, int screen_height) {
+    int visual_line = m_state.calculateVisualLineOfCursor(screen_width);
+
+
+    return std::min(screen_height / 2 - 1, visual_line - 1);
+}

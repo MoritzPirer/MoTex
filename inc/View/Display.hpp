@@ -20,12 +20,11 @@ private:
     int screenHeight();
     int screenWidth();
 
-    int visualRowsNeeded(size_t line_length);
     
     void renderEmptyLine(int& visual_row);
-    int renderLine(int& visual_row, int logical_line_index);
-    int renderText();
-    void renderCursor(size_t visual_row_of_cursor);
+    void renderLine(int& visual_row, const std::string& line_to_render);
+    void renderText();
+    void renderCursor();
 
     void render();
 
