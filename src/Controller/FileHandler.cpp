@@ -1,7 +1,7 @@
 #include <fstream>
 #include <filesystem>
 
-#include "../../inc/Model/FileHandler.hpp"
+#include "../../inc/Controller/FileHandler.hpp"
 
 TextFile FileHandler::openFile(const std::string& file_path) {
     TextFile file(file_path);
@@ -21,8 +21,7 @@ TextFile FileHandler::openFile(const std::string& file_path) {
     while (getline(input_file, line)) {
         file.writeToEnd(line);
     }
-    fprintf(stderr, "read file");
-    fflush(stderr);
+
     file.calculateMetadata();
 
     input_file.close();
@@ -73,5 +72,32 @@ void FileHandler::renameFile(TextFile& file, std::string new_path) {
     else {
         std::filesystem::path base_directory = file.getFilepath().parent_path();
         file.setFilepath(base_directory/new_path); // '/' operater is concatination here
+    }
+}
+
+std::string FileHandler::constructDefaultFilename(int counter) {
+    std::string default_file_name = "new_file";
+    std::string default_file_ending = ".txt";
+
+    std::string numbered_name;
+    if (counter == 0) {
+        return default_file_name + default_file_ending;
+    }
+    
+    return default_file_name + " (" + std::to_string(counter) + ")" + default_file_ending;
+}
+
+std::filesystem::path FileHandler::getDefaultName() {
+    int counter = 0;
+
+    while (true) {
+        std::string default_name = constructDefaultFilename(counter);
+        std::filesystem::path default_path = std::filesystem::absolute(default_name);
+
+        if (!std::filesystem::exists(default_path)) {
+            return default_path;
+        }
+
+        counter++;
     }
 }

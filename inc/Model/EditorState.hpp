@@ -12,8 +12,6 @@
 #include "../../inc/Model/TextFile.hpp"
 #include "../../inc/Model/Cursor.hpp"
 
-#include "../../inc/Model/FileHandler.hpp"
-
 class EditorState {
 private:
     TextFile m_file;
@@ -22,11 +20,10 @@ private:
     bool isLastVisualLineOfLine(int screen_width);
     
     Position skipOffscreenLines(int offscreen_visual_lines, int screen_width) const;
-    public:
-    EditorState() {
-        FileHandler f;
-        m_file = f.openFile("test.txt");
-    }
+
+public:
+    EditorState() = default;
+    EditorState(TextFile file): m_file{file} {}  
     
     EditorState(const EditorState&) = default;
     ~EditorState() = default;

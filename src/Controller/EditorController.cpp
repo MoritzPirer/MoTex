@@ -1,5 +1,19 @@
 #include <ncurses.h>
 #include "../../inc/Controller/EditorController.hpp"
+#include "../../inc/Controller/FileHandler.hpp"
+
+EditorController::EditorController(std::optional<std::string> file_path) {
+    FileHandler file_handler;
+    TextFile file;
+    if (file_path.has_value()) {
+        file = file_handler.openFile(file_path.value());        
+    }
+    else {
+        std::filesystem::path name = file_handler.getDefaultName(); 
+        file = TextFile(name);
+    }
+    
+}
 
 int EditorController::getCursorRow() const {
     return m_state.getCursor().getPosition().row;

@@ -29,6 +29,7 @@ private:
     void render();
 
 public:
+    Display(std::string& file_path);
     Display() = default;
     ~Display() = default;
 

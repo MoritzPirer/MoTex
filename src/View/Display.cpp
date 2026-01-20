@@ -67,6 +67,10 @@ void Display::render() {
     refresh();
 }
 
+Display::Display(std::string& file_path) {
+    
+}
+
 void Display::mainLoop() {
     bool quit = false;
 

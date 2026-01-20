@@ -15,6 +15,7 @@
 #include "TextFile.hpp"
 
 class FileHandler {
+    std::string constructDefaultFilename(int counter);
 public:
     
     TextFile openFile(const std::string& file_path);
@@ -24,6 +25,8 @@ public:
     void saveFile(TextFile& file);
 
     void renameFile(TextFile& file, std::string new_name);
+
+    std::filesystem::path getDefaultName();
 };
 
 

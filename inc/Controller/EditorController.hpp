@@ -9,13 +9,15 @@
 #ifndef EDITOR_CONTROLLER_HPP
 #define EDITOR_CONTROLLER_HPP
 
+#include <optional>
+
 #include "../Model/EditorState.hpp"
 
 class EditorController {
 private:
     EditorState m_state;
 public:
-    EditorController() = default;
+    EditorController(std::optional<std::string> file_path);
     EditorController(const EditorController&) = default;
     ~EditorController() = default;
 
