@@ -84,6 +84,25 @@ void TextFile::deleteRange(Position start, Position end) {
     }
 }
 
+void TextFile::splitAt(Position first_of_new_paragraph) {
+    validatePosition(first_of_new_paragraph);
+
+    std::string& line_to_split = m_file_content.at(first_of_new_paragraph.row);
+    std::string split_line = line_to_split.substr(first_of_new_paragraph.column);
+    line_to_split.erase(line_to_split.begin() + first_of_new_paragraph.column, line_to_split.end());
+    m_file_content.insert(m_file_content.begin() + first_of_new_paragraph.row + 1, split_line);
+    
+}
+
+void TextFile::joinToPrevious(int line) {
+    if (line == 0 || line >= m_file_content.size()) {
+        return;
+    }
+
+    m_file_content.at(line - 1).append(m_file_content.at(line));
+    m_file_content.erase(m_file_content.begin() + line);
+}
+
 
 int TextFile::getLineCount() const {
     return m_file_content.size();

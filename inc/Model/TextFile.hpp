@@ -40,6 +40,8 @@ public:
     void writeToEnd(const std::string& line);
     void insertCharacterAt(char character_to_add, Position position);
     void deleteRange(Position start, Position end);
+    void splitAt(Position first_of_new_paragraph);
+    void joinToPrevious(int line);
     
     int getLineCount() const;
     int getLineLength(size_t line_index) const;

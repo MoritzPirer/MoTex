@@ -2,6 +2,8 @@
 #include "../../../inc/Controller/Action/InsertAction.hpp"
 #include "../../../inc/Controller/Action/NullAction.hpp"
 #include "../../../inc/Controller/Action/DeleteAction.hpp"
+#include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
+
 #include "../../../inc/Controller/Control/SpecialInputs.hpp"
 
 std::pair<ModeType, std::shared_ptr<Action>> TypingMode::parseInput(int input) {
@@ -12,6 +14,10 @@ std::pair<ModeType, std::shared_ptr<Action>> TypingMode::parseInput(int input) {
 
     case INPUT_BACKSPACE: {
         return {ModeType::TYPING_MODE, std::make_shared<DeleteAction>(std::nullopt, std::nullopt)};
+    }
+
+    case INPUT_ENTER: {
+        return {ModeType::TYPING_MODE, std::make_shared<ParagraphSplittingAction>()};
     }
 
     default: {

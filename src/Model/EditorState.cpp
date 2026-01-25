@@ -79,7 +79,7 @@ void EditorState::moveCursorLeft() {
         m_cursor.moveUpLogical();
         
         int new_line_length = m_file.getLineLength(m_cursor.getRow());
-        m_cursor.setColumn(std::max(new_line_length - 1, 0));
+        m_cursor.setColumn(std::max(new_line_length, 0));
     }
 }
 
@@ -87,7 +87,7 @@ void EditorState::moveCursorRight() {
     int line_length = m_file.getLine(m_cursor.getRow()).length();
 
     // normal move right
-    if (m_cursor.getPosition().column + 1 < line_length) { 
+    if (m_cursor.getPosition().column < line_length) { 
         m_cursor.moveRight();
     }
     // end of line -> jump to start of next
@@ -132,10 +132,18 @@ void EditorState::insertCharacter(char character_to_add) {
 
 void EditorState::deleteRange(Position start, Position end) {
     m_file.deleteRange(start, end);
-
-    // MODO NEED TO CHANGE CURSOR POS
 }
 
+void EditorState::splitAtCursor() {
+    m_file.splitAt(m_cursor.getPosition());
+    moveCursorRight();
+}
+
+void EditorState::joinLineToPrevious(int line) {
+    moveCursorLeft();
+    m_file.joinToPrevious(line);
+    // moveCursorRight();
+}
 
 Position EditorState::getFirstVisibleChar(ScreenSize size) {
     int visual_line_of_cursor = calculateVisualLineOfCursor(size.width);

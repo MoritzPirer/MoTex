@@ -38,6 +38,8 @@ public:
 
     void insertCharacter(char character_to_add);
     void deleteRange(Position start, Position end);
+    void splitAtCursor();
+    void joinLineToPrevious(int line);
     
     Position getFirstVisibleChar(ScreenSize size);
     

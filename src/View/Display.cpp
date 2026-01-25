@@ -40,7 +40,7 @@ void Display::renderText() {
     }
 
     // rest of screen
-    while (visual_row < screenHeight()) {
+    while (visual_row < screenHeight() - 1) {
         if (logical_line_index >= m_controller.getLineCount()) {
             renderEmptyLine(visual_row);
             continue;

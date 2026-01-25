@@ -29,7 +29,7 @@ std::string EditorController::getModeLabel() const {
     return m_mode_manager.getModeLabel();
 }
 bool EditorController::processInput(int input, ScreenSize size) {
-    if (input == 'q') { //Temporary until quit command exists properly
+    if (input == 'q' ) { //Temporary until quit command exists properly
         return true;
     }
     
