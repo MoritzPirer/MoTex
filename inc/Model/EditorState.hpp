@@ -17,13 +17,18 @@ class EditorState {
 private:
     TextFile m_file;
     Cursor m_cursor;
-    
+    bool m_is_quit;
+
     bool isLastVisualLineOfLine(int screen_width);
     
     Position skipOffscreenLines(int offscreen_visual_lines, int screen_width) const;
 
 public:
-    EditorState() = default;
+    EditorState():
+        m_file{},
+        m_cursor{},  
+        m_is_quit{false} {}
+
     EditorState(TextFile file): m_file{file} {}  
     
     EditorState(const EditorState&) = default;
@@ -31,6 +36,8 @@ public:
     
     const Cursor& getCursor() const { return m_cursor; }
     TextFile& getFile() { return m_file; }
+    bool getIsQuit() const { return m_is_quit; }
+    void setIsQuit(bool is_quit) { m_is_quit = is_quit; } 
     
     void moveCursorUp(int screen_width);
     void moveCursorLeft();

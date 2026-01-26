@@ -4,6 +4,7 @@
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
 #include "../../../inc/Controller/Action/DeleteAction.hpp"
 #include "../../../inc/Controller/Action/SaveAction.hpp"
+#include "../../../inc/Controller/Action/QuitAction.hpp"
 
 std::pair<ModeType, std::shared_ptr<Action>> ToolMode::parseInput(int input, ScreenSize size) {
     switch (input) {
@@ -17,8 +18,10 @@ std::pair<ModeType, std::shared_ptr<Action>> ToolMode::parseInput(int input, Scr
         return {ModeType::TOOL_MODE, std::make_shared<CharwiseMoveAction>(size, Direction::UP)};
     case 'l':
         return {ModeType::TOOL_MODE, std::make_shared<CharwiseMoveAction>(size, Direction::FORWARD)};
-    case 'y':
+    case 's':
         return {ModeType::TOOL_MODE, std::make_shared<SaveAction>()};
+    case 'q':
+        return {ModeType::TOOL_MODE, std::make_shared<QuitAction>()};
     default:
         return {ModeType::TOOL_MODE, std::make_shared<NullAction>()};
     }

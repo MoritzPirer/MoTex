@@ -28,19 +28,18 @@ int EditorController::getCursorColumn() const {
 std::string EditorController::getModeLabel() const {
     return m_mode_manager.getModeLabel();
 }
-bool EditorController::processInput(int input, ScreenSize size) {
-    if (input == 'q' ) { //Temporary until quit command exists properly
-        return true;
-    }
-    
+
+void EditorController::processInput(int input, ScreenSize size) {
     std::shared_ptr<Action> action = m_mode_manager.convertToAction(input, size);
     action->applyTo(m_state);
-
-    return false;
 }
 
 Position EditorController::getFirstVisibleChar(ScreenSize size) {
     return m_state.getFirstVisibleChar(size);
+}
+
+bool EditorController::isQuit() const {
+    return m_state.getIsQuit();
 }
 
 int EditorController::getLineCount() const {

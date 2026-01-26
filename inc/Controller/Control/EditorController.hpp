@@ -28,8 +28,9 @@ public:
 
     std::string getModeLabel() const;
 
-    bool processInput(int input, ScreenSize size);
+    void processInput(int input, ScreenSize size);
     
+    bool isQuit() const;
     int getLineCount() const;
     Position getFirstVisibleChar(ScreenSize size);
     std::string getPartialLine(Position start);

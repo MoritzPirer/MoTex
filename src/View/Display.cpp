@@ -94,13 +94,12 @@ Display::Display():
     {}
 
 void Display::mainLoop() {
-    bool quit = false;
 
-    while (!quit) {
+    while (!m_controller.isQuit()) {
         render();
 
         int input = translateInput(getch());
-        quit = m_controller.processInput(input, screenSize());
+        m_controller.processInput(input, screenSize());
     }
 }
 
