@@ -105,20 +105,20 @@ void Display::mainLoop() {
 
 int Display::translateInput(int input) {
     switch (input) {
-    case '\n':
-    case '\r':
-    case KEY_ENTER:
-        return INPUT_ENTER;
-    
-    case 27:
-        return INPUT_ESCAPE;
-    
-    case KEY_BACKSPACE:
-    case 127:
-    case '\b':
-        return INPUT_BACKSPACE;
+        case '\n':
+        case '\r':
+        case KEY_ENTER:
+            return INPUT_ENTER;
+        
+        case 27:
+            return INPUT_ESCAPE;
+        
+        case KEY_BACKSPACE:
+        case 127:
+        case '\b':
+            return INPUT_BACKSPACE;
 
-    default:
-        return input;
+        default:
+            return input;
     }
 }
