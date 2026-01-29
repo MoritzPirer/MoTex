@@ -11,7 +11,7 @@
 
 #include "../../inc/Model/TextFile.hpp"
 #include "../../inc/Model/Cursor.hpp"
-#include "../../inc/Controller/ScreenSize.hpp"
+#include "../../inc/Shared/ScreenSize.hpp"
 
 class EditorState {
 private:

@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "../Controller/Position.hpp"
+#include "../Shared/Position.hpp"
 
 class TextFile {
 private:

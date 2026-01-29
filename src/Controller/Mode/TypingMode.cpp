@@ -4,7 +4,7 @@
 #include "../../../inc/Controller/Action/DeleteAction.hpp"
 #include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
 
-#include "../../../inc/Controller/Control/SpecialInputs.hpp"
+#include "../../../inc/Shared/SpecialInputs.hpp"
 
 std::pair<ModeType, std::vector<std::shared_ptr<Action>>> TypingMode::parseInput(int input, ScreenSize size) {
     (void) size;

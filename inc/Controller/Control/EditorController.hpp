@@ -11,6 +11,7 @@
 
 #include <optional>
 
+#include "../../View/UiHandler.hpp"
 #include "../../Model/EditorState.hpp"
 #include "../Mode/ModeManager.hpp"
 
@@ -18,9 +19,13 @@ class EditorController {
 private:
     EditorState m_state;
     ModeManager m_mode_manager;
+    UiHandler m_ui_handler;
     
+    std::vector<std::string> splitIntoRows(const std::string& paragraph, int start_column) const;
+
+    RenderInfo calculateRenderInfo();
 public:
-    EditorController(std::optional<std::string> file_path);
+    EditorController(std::optional<std::string> file_path = std::nullopt);
     virtual ~EditorController() = default;
 
 
@@ -57,6 +62,8 @@ public:
     /// @param size the current size of te text area
     /// @return the visual lie of the cursor 
     int screenLineOfCursor(ScreenSize size);
+
+    void mainLoop();
 };
 
 #endif //EDITOR_CONTROLLER_HPP

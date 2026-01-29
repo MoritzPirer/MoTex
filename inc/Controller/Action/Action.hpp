@@ -10,7 +10,7 @@
 #define ACTION_HPP
 
 #include "../../Model/EditorState.hpp"
-#include "../ScreenSize.hpp"
+#include "../../Shared/ScreenSize.hpp"
 
 class Action {
 public:

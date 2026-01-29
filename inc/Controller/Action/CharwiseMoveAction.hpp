@@ -10,7 +10,7 @@
 #define CHARACTERWISE_MOVE_ACTION_HPP
 
 #include "SizeDependantAction.hpp"
-#include "../Direction.hpp"
+#include "../../Shared/Direction.hpp"
 
 class CharwiseMoveAction: public SizeDependantAction {
 private:

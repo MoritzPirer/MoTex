@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 #include "../../inc/Model/TextFile.hpp"
-#include "../../inc/Controller/Position.hpp"
+#include "../../inc/Shared/Position.hpp"
 
 class Cursor {
 private:

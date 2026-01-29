@@ -98,7 +98,7 @@ void EditorState::moveCursorRight() {
 }
 
 int EditorState::calculateVisualLineOfCursor(int screen_width) const {
-    int visual_line_of_cursor = TextFile::visualLinesNeeded(m_cursor.getColumn(), screen_width);
+    int visual_line_of_cursor = m_cursor.getColumn() / screen_width; //TextFile::visualLinesNeeded(m_cursor.getColumn(), screen_width);
     
     for (int logical_line_index = 0; logical_line_index < m_cursor.getRow(); logical_line_index++) {
         visual_line_of_cursor += m_file.visualLinesOfLine(logical_line_index, screen_width);

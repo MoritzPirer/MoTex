@@ -1,15 +1,15 @@
-#include "inc/View/Display.hpp"
+#include "inc/Controller/Control/EditorController.hpp"
 
 int main(int argument_count, char* argument_values[]) { 
     switch (argument_count) {
         case 1: {
-            Display d;
-            d.mainLoop();
+            EditorController controller;
+            controller.mainLoop();
             break;
         }
         case 2: {
-            Display d(argument_values[1]);
-            d.mainLoop();
+            EditorController controller(argument_values[1]);
+            controller.mainLoop();
             break;
         }
     }
