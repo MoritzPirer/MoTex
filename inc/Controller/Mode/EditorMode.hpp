@@ -1,6 +1,6 @@
 ///
 /// @file: EditorMode.hpp
-/// @description: description
+/// @description: abstract template for a mode the editor can be in
 ///
 /// @date: 2026-01-23
 /// @author: Moritz Pirer
@@ -17,15 +17,20 @@
 #include "ModeType.hpp"
 
 class EditorMode {
-private:
-    
 public:
     EditorMode() = default;
     EditorMode(const EditorMode&) = default;
     virtual ~EditorMode() = default;
 
-    virtual std::pair<ModeType, std::vector<std::shared_ptr<Action>>> parseInput(int input, ScreenSize size) = 0;
+    /// @brief parses the input and converts it into an editor mode and one or more Actions
+    /// @param input the input to process 
+    /// @param size the current size of the screen area
+    /// @return the mode the editor should transition to (may be the same as currently), one or more
+    ///     actions to apply to the editor state (which may be NullAction if nothing should be done) 
+    virtual std::pair<ModeType, std::vector<std::shared_ptr<Action>>>
+        parseInput(int input, ScreenSize size) = 0;
 
+    /// @brief returns the name of the mode for displaying
     virtual std::string getModeLabel() const = 0;
 };
 

@@ -51,10 +51,10 @@ std::vector<std::string> EditorController::calculateVisibleRows() {
         if (static_cast<size_t>(current_paragraph) < m_state.getNumberOfParagrahps()) { 
             
             std::vector<std::string> split = splitIntoRows(
-                m_state.getLine(current_paragraph),
+                m_state.getParagraph(current_paragraph),
                 (is_first_paragraph? first_visible.column : 0)
             );
-            
+
             is_first_paragraph = false;
 
 

@@ -112,7 +112,7 @@ int TextFile::getLineLength(size_t line_index) const {
     return m_file_content.at(line_index).length();
 }
 
-const std::string& TextFile::getLine(size_t line_index) const {
+const std::string& TextFile::getParagraph(size_t line_index) const {
     //MODO bounds checking?
     return m_file_content.at(line_index); 
 }

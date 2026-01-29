@@ -1,6 +1,6 @@
 ///
 /// @file: ModeManager.hpp
-/// @description: description
+/// @description: handles the Editor modes an the transitions between them
 ///
 /// @date: 2026-01-23
 /// @author: Moritz Pirer
@@ -18,7 +18,8 @@ class ModeManager {
 private:
     std::unique_ptr<EditorMode> m_current_mode;
     
-    void changeState(ModeType new_mode);
+    void changeMode(ModeType new_mode);
+
 public:
     ModeManager(ModeType initial_mode);
     ~ModeManager() = default;

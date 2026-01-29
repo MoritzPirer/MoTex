@@ -1,6 +1,6 @@
 ///
 /// @file: ToolMode.hpp
-/// @description: description
+/// @description: the mode that contains most of the editing shortcuts
 ///
 /// @date: 2026-01-23
 /// @author: Moritz Pirer

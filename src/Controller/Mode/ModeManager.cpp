@@ -3,10 +3,10 @@
 #include "../../../inc/Controller/Mode/TypingMode.hpp"
 
 ModeManager::ModeManager(ModeType initial_mode) {
-    changeState(initial_mode);
+    changeMode(initial_mode);
 }
 
-void ModeManager::changeState(ModeType new_mode) {
+void ModeManager::changeMode(ModeType new_mode) {
     switch (new_mode) {
         case ModeType::TOOL_MODE:
             m_current_mode = std::make_unique<ToolMode>();
@@ -22,7 +22,7 @@ void ModeManager::changeState(ModeType new_mode) {
 
 std::vector<std::shared_ptr<Action>> ModeManager::convertToAction(int input, ScreenSize size) {
     auto [new_mode, actions] = m_current_mode->parseInput(input, size);
-    changeState(new_mode);
+    changeMode(new_mode);
 
     return actions;
 }

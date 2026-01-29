@@ -49,7 +49,7 @@ public:
     
     int getNumberOfParagrahps() const;
     int getLineLength(size_t line_index) const;
-    const std::string& getLine(size_t line_index) const;
+    const std::string& getParagraph(size_t line_index) const;
 
     void calculateMetadata();
 

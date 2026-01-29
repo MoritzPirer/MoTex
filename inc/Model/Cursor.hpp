@@ -1,6 +1,6 @@
 ///
 /// @file: Cursor.hpp
-/// @description: description
+/// @description: the cursor of the editor, screen rendering, typing and many commands are relative to the cursor
 ///
 /// @date: 2026-01-14
 /// @author: Moritz Pirer

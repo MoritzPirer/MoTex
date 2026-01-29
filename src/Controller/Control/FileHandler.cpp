@@ -53,7 +53,7 @@ void FileHandler::saveFile(TextFile& file) {
         }
     
         for (int i = 0; i < file.getNumberOfParagrahps(); i++) {
-            const std::string& line = file.getLine(i);
+            const std::string& line = file.getParagraph(i);
             output_file << line; 
     
             if (!line.ends_with("\n") && i < file.getNumberOfParagrahps() - 1) {

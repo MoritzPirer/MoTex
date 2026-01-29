@@ -1,6 +1,7 @@
 ///
 /// @file: EditorState.hpp
-/// @description: description
+/// @description: Manages the internal state of the Editor, including the currently opened file and the
+///     position of the cursor
 ///
 /// @date: 2026-01-14
 /// @author: Moritz Pirer
@@ -19,8 +20,11 @@ private:
     Cursor m_cursor;
     bool m_is_quit;
 
-    bool isLastVisualLineOfLine(int screen_width);
+    bool isCursorInLastRowOfParagraph(int screen_width);
     
+    /// @brief calculates the first visible char after skipping some number of visual rows
+    /// @param offscreen_visual_lines how many lines to skip
+    /// @param screen_width how wide the text area is
     Position skipOffscreenLines(int offscreen_visual_lines, int screen_width) const;
 
 public:
@@ -44,7 +48,6 @@ public:
     void moveCursorDown(int screen_width);
     void moveCursorRight();
 
-
     void insertCharacterAtCursor(char character_to_add);
     
     /// @brief deletes from start to end, including both end points. if the range is 
@@ -61,13 +64,13 @@ public:
     /// @param line the index of the line to join to the previous 
     void joinLineToPrevious(int line);
 
-    
     Position getFirstVisibleChar(ScreenSize size);
     
+    /// @return the number of paragraphs in the file
     size_t getNumberOfParagrahps() const { return m_file.getNumberOfParagrahps(); }
     
-    std::string getPartialLine(Position start);
-    const std::string& getLine(size_t row) const { return m_file.getLine(row); }
+    const std::string& getParagraph(size_t row) const { return m_file.getParagraph(row); }
+
     int calculateVisualLineOfCursor(int screen_width) const;
 };
 

@@ -2,15 +2,14 @@
 
 #include <ncurses.h>
 
-bool EditorState::isLastVisualLineOfLine(int screen_width) {
+bool EditorState::isCursorInLastRowOfParagraph(int screen_width) {
     int line_length = m_file.getLineLength(m_cursor.getRow());
     
     if (line_length == 0) {
         return true;
     }
     
-    return m_cursor.getColumn() / screen_width
-        == (line_length - 1) / screen_width;
+    return m_cursor.getColumn() / screen_width == (line_length - 1) / screen_width;
 }
 
 void EditorState::moveCursorUp(int screen_width) {
@@ -44,7 +43,7 @@ void EditorState::moveCursorUp(int screen_width) {
 
 void EditorState::moveCursorDown(int screen_width) {
     bool is_last_logical_line = (m_cursor.getRow() == m_file.getNumberOfParagrahps() - 1);
-    bool is_last_visual_line = isLastVisualLineOfLine(screen_width);
+    bool is_last_visual_line = isCursorInLastRowOfParagraph(screen_width);
     
     // case 1: already in last visual line of file
     if (is_last_logical_line && is_last_visual_line) { 
@@ -84,7 +83,7 @@ void EditorState::moveCursorLeft() {
 }
 
 void EditorState::moveCursorRight() {
-    int line_length = m_file.getLine(m_cursor.getRow()).length();
+    int line_length = m_file.getParagraph(m_cursor.getRow()).length();
 
     // normal move right
     if (m_cursor.getPosition().column < line_length) { 
@@ -160,5 +159,5 @@ Position EditorState::getFirstVisibleChar(ScreenSize size) {
 }
 
 std::string EditorState::getPartialLine(Position start) {
-    return m_file.getLine(start.row).substr(start.column);
+    return m_file.getParagraph(start.row).substr(start.column);
 }

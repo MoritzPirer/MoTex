@@ -1,6 +1,6 @@
 ///
 /// @file: ModeType.hpp
-/// @description: description
+/// @description: the different modes the editor can be in 
 ///
 /// @date: 2026-01-23
 /// @author: Moritz Pirer
