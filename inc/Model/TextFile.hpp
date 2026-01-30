@@ -26,7 +26,6 @@ private:
     size_t m_word_count;
     size_t m_character_count;
 
-    void validatePosition(Position position);
 
 public:
     TextFile() = default;
@@ -62,6 +61,8 @@ public:
 
     static int visualLinesNeeded(int line_length, int screen_width);
     size_t visualLinesOfParagraph(size_t line_index, int screen_width) const;
+
+    bool isValidPosition(Position position);
 };
 
 #endif //TEXT_FILE_HPP

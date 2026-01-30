@@ -15,12 +15,14 @@ TextFile::TextFile(const std::string& file_path):
     m_word_count{0},
     m_character_count{0} {}
 
-void TextFile::validatePosition(Position position) {
+bool TextFile::isValidPosition(Position position) {
     if (static_cast<size_t>(position.row) >= m_file_content.size()
         || static_cast<size_t>(position.column) > m_file_content.at(position.row).length()) {
             
-        throw std::out_of_range("Invalid position: " + position.format());
+        return false;
     }
+
+    return true;
 }
 
 
@@ -44,15 +46,19 @@ void TextFile::writeToEnd(const std::string& line) {
 }
 
 void TextFile::insertCharacterAt(char character_to_add, Position position) {
-    validatePosition(position);
+    if (!isValidPosition(position)) {
+        throw std::invalid_argument("Insertion attempted at invalid position " + position.format() + "!");
+    }
 
     std::string& line = m_file_content.at(position.row);
     line.insert(line.begin() + position.column, character_to_add);
 }
 
 void TextFile::deleteRange(Position start, Position end) {
-    validatePosition(start);
-    validatePosition(end);
+    if (!isValidPosition(start) || !isValidPosition(end)) {
+        throw std::invalid_argument("deletion start " + start.format()
+            + " and / or end " + end.format() + " invalid!");
+    }
 
     if (start.row > end.row
         || (start.row == end.row && start.column > end.column)) {
@@ -85,7 +91,9 @@ void TextFile::deleteRange(Position start, Position end) {
 }
 
 void TextFile::splitAt(Position first_of_new_paragraph) {
-    validatePosition(first_of_new_paragraph);
+    if(!isValidPosition(first_of_new_paragraph)) {
+        throw std::invalid_argument("invalid splitting position " + first_of_new_paragraph.format() + "!");
+    }
 
     std::string& line_to_split = m_file_content.at(first_of_new_paragraph.row);
     std::string split_line = line_to_split.substr(first_of_new_paragraph.column);

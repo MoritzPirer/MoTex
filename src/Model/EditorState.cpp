@@ -96,6 +96,15 @@ void EditorState::moveCursorRight() {
     }
 }
 
+void EditorState::moveCursorTo(Position position) {
+    if (!m_file.isValidPosition(position)) {
+        throw new std::invalid_argument("Invalid move destination " + position.format() + "!");
+    }
+
+    m_cursor.setColumn(position.column);
+    m_cursor.setRow(position.row);
+}
+
 int EditorState::calculateVisualLineOfCursor(int screen_width) const {
     int visual_line_of_cursor = m_cursor.getColumn() / screen_width; //TextFile::visualLinesNeeded(m_cursor.getColumn(), screen_width);
     

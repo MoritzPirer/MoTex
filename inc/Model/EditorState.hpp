@@ -47,6 +47,7 @@ public:
     void moveCursorLeft();
     void moveCursorDown(int screen_width);
     void moveCursorRight();
+    void moveCursorTo(Position position);
 
     void insertCharacterAtCursor(char character_to_add);
     inline void debug(std::string line) {m_file.writeToEnd(line); } 

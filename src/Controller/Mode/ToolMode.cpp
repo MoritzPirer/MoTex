@@ -5,11 +5,11 @@
 #include "../../../inc/Controller/Action/SaveAction.hpp"
 #include "../../../inc/Controller/Action/QuitAction.hpp"
 #include "../../../inc/Controller/Action/EraseAction.hpp"
+#include "../../../inc/Controller/Action/ChunkwiseMoveAction.hpp"
 
 std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(int input, ScreenSize size) {
     switch (input) {
-        case 'a':
-            return {ModeType::TYPING_MODE, {}};
+        // move actions
         case 'h':
             return {ModeType::TOOL_MODE, {std::make_shared<CharwiseMoveAction>(size, Direction::BACKWARD)}};
         case 'j':
@@ -18,14 +18,35 @@ std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(i
             return {ModeType::TOOL_MODE, {std::make_shared<CharwiseMoveAction>(size, Direction::UP)}};
         case 'l':
             return {ModeType::TOOL_MODE, {std::make_shared<CharwiseMoveAction>(size, Direction::FORWARD)}};
+        case 'g':
+            return {ModeType::TOOL_MODE, {std::make_shared<ChunkwiseMoveAction>(Scope::FILE, Destination::START)}};
+        case 'G':
+            return {ModeType::TOOL_MODE, {std::make_shared<ChunkwiseMoveAction>(Scope::FILE, Destination::END)}};
+        case '0':
+            return {ModeType::TOOL_MODE, {std::make_shared<ChunkwiseMoveAction>(Scope::PARAGRAPH, Destination::START)}};
+        case '$':
+            return {ModeType::TOOL_MODE, {std::make_shared<ChunkwiseMoveAction>(Scope::PARAGRAPH, Destination::END)}};
+
+        // mode switching actions
+        case 'a':
+            return {ModeType::TYPING_MODE, {}};
+        case 'I':
+            return {ModeType::TYPING_MODE, {std::make_shared<ChunkwiseMoveAction>(Scope::PARAGRAPH, Destination::START)}};
+        case 'A':
+            return {ModeType::TYPING_MODE, {std::make_shared<ChunkwiseMoveAction>(Scope::PARAGRAPH, Destination::END)}};
+
+        // file actions
         case 't': // temporary shortcut
             return {ModeType::TOOL_MODE, {std::make_shared<SaveAction>()}};
         case 'q':
             return {ModeType::TOOL_MODE, {std::make_shared<QuitAction>()}};
+
+        // deletion actions
         case 'x':
             return {ModeType::TOOL_MODE, {std::make_shared<EraseAction>(0)}};
         case 's':
             return {ModeType::TYPING_MODE, {std::make_shared<EraseAction>(0)}};
+
         default:
             return {ModeType::TOOL_MODE, {}};
         }
