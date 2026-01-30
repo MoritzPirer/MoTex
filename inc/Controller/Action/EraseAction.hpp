@@ -1,0 +1,25 @@
+///
+/// @file: EraseAction.hpp
+/// @description: description
+///
+/// @date: 2026-01-30
+/// @author: Moritz Pirer
+///
+
+#ifndef ERASE_ACTION_HPP
+#define ERASE_ACTION_HPP
+
+#include "Action.hpp"
+
+class EraseAction: public Action {
+private:
+    int m_offset;
+public:
+    EraseAction(int offset);
+    EraseAction(const EraseAction&) = default;
+    ~EraseAction() = default;
+
+    void applyTo(EditorState& state) override;
+};
+
+#endif //ERASE_ACTION_HPP
