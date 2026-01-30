@@ -1,6 +1,5 @@
 #include "../../../inc/Controller/Mode/TypingMode.hpp"
 #include "../../../inc/Controller/Action/InsertAction.hpp"
-#include "../../../inc/Controller/Action/ction.hpp"
 #include "../../../inc/Controller/Action/EraseAction.hpp"
 #include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
 

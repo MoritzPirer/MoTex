@@ -3,6 +3,12 @@
 EraseAction::EraseAction(int offset): m_offset{offset} {}
 
 void EraseAction::applyTo(EditorState& state) {
+    /*
+    NOTE:
+    if erasing a single char further away from the cursor or to the right of the cursor is needed
+    this logic needs to be reworked!
+    */
+
     Position cursor_position = state.getCursor().getPosition();
     Position erase_position = cursor_position; 
     
@@ -24,7 +30,7 @@ void EraseAction::applyTo(EditorState& state) {
         
     }
     else if (m_offset > 0) {
-        return; //TODO
+        return;
     }
 
     if (erase_position.row < cursor_position.row) {

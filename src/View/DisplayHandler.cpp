@@ -16,5 +16,7 @@ void DisplayHandler::renderLine(int& start_visual_row, const std::string& line) 
 }
 
 void DisplayHandler::renderModeLabel(const std::string& label) {
+    move(screenSize().height - 1, 0);
+    clrtoeol(); //clear line
     mvprintw(screenSize().height - 1, 0, "--%s--", label.c_str());
 }
