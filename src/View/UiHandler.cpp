@@ -12,8 +12,11 @@ void UiHandler::renderCursor(const RenderInfo& render_info) {
     m_display_handler.renderCursor(render_info.getCursorPosition());
 }
 
-void UiHandler::renderModeLabel(const RenderInfo& render_info) {
-    m_display_handler.renderModeLabel(render_info.getModeLabel());
+void UiHandler::renderMetadata(const RenderInfo& render_info) {
+    int metadata_offset = render_info.getRowCount();
+    for (int i = 0; i < render_info.getMetadataRowCount(); i++) {
+        m_display_handler.renderLine(i + metadata_offset, render_info.getMetadataRow(i));
+    }
 }
 
 ScreenSize UiHandler::screenSize() const {
@@ -24,7 +27,7 @@ void UiHandler::render(const RenderInfo& render_info) {
     clear();
 
     renderText(render_info);
-    renderModeLabel(render_info);
+    renderMetadata(render_info);
     renderCursor(render_info);
 
     refresh();

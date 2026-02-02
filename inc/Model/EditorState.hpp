@@ -79,7 +79,11 @@ public:
     
     /// @return the number of paragraphs in the file
     size_t getNumberOfParagrahps() const { return m_file.getNumberOfParagrahps(); }
-    
+    size_t getNumberOfWords() const { return m_file.getNumberOfWords(); }
+    size_t getNumberOfCharacters() const { return m_file.getNumberofCharacters(); }
+    SaveState getSaveState() const { return m_file.getSaveState(); }
+    std::string getFileName() const { return m_file.getFilepath().filename(); }
+
     const std::string& getParagraph(size_t row) const { return m_file.getParagraph(row); }
 
     int calculateVisualLineOfCursor(int screen_width) const;

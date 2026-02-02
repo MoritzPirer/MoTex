@@ -1,17 +1,17 @@
 #include <algorithm>
 #include "../../inc/Model/TextFile.hpp"
 
-TextFile::TextFile(std::filesystem::path file_path):
+TextFile::TextFile(std::filesystem::path file_path, SaveState save_state):
     m_absolute_file_path{file_path},
     m_file_content{},
-    m_has_unsaved_changes{false},
+    m_save_state{save_state},
     m_word_count{0},
     m_character_count{0} {}
 
-TextFile::TextFile(const std::string& file_path):
+TextFile::TextFile(const std::string& file_path, SaveState save_state):
     m_absolute_file_path{std::filesystem::absolute(file_path)},
     m_file_content{},
-    m_has_unsaved_changes{false},
+    m_save_state{save_state},
     m_word_count{0},
     m_character_count{0} {}
 
@@ -34,13 +34,13 @@ const std::filesystem::path& TextFile::getFilepath() const {
     return m_absolute_file_path;
 }
 
-void TextFile::setHasUnsavedChanges(bool has_unsaved_changes) {
-    m_has_unsaved_changes = has_unsaved_changes;
-}
 
 void TextFile::writeToEnd(const std::string& line) {
     m_file_content.emplace_back(line);
-    m_has_unsaved_changes = true;
+    
+    if (m_save_state != SaveState::NEVER_SAVED) {
+        m_save_state = SaveState::UNSAVED_CHANGES;
+    }
     
     calculateMetadata();
 }
@@ -52,6 +52,9 @@ void TextFile::insertCharacterAt(char character_to_add, Position position) {
 
     std::string& line = m_file_content.at(position.row);
     line.insert(line.begin() + position.column, character_to_add);
+    
+    m_save_state = SaveState::UNSAVED_CHANGES;
+    calculateMetadata();
 }
 
 void TextFile::deleteRange(Position start, Position end) {
@@ -73,6 +76,9 @@ void TextFile::deleteRange(Position start, Position end) {
             m_file_content.erase(m_file_content.begin() + start.row);
         } 
         
+        m_save_state = SaveState::UNSAVED_CHANGES;
+        calculateMetadata();
+
         return;
     }
 
@@ -88,6 +94,9 @@ void TextFile::deleteRange(Position start, Position end) {
 
         line.erase(line.begin() + start_of_erase, line.begin() + end_of_erase);
     }
+
+    m_save_state = SaveState::UNSAVED_CHANGES;
+    calculateMetadata();
 }
 
 void TextFile::splitAt(Position first_of_new_paragraph) {
@@ -100,6 +109,7 @@ void TextFile::splitAt(Position first_of_new_paragraph) {
     line_to_split.erase(line_to_split.begin() + first_of_new_paragraph.column, line_to_split.end());
     m_file_content.insert(m_file_content.begin() + first_of_new_paragraph.row + 1, split_line);
     
+    m_save_state = SaveState::UNSAVED_CHANGES;
 }
 
 void TextFile::joinToPrevious(int paragraph_index) {
@@ -109,11 +119,21 @@ void TextFile::joinToPrevious(int paragraph_index) {
 
     m_file_content.at(paragraph_index - 1).append(m_file_content.at(paragraph_index));
     m_file_content.erase(m_file_content.begin() + paragraph_index);
+
+    m_save_state = SaveState::UNSAVED_CHANGES;
 }
 
 
 int TextFile::getNumberOfParagrahps() const {
     return m_file_content.size();
+}
+
+int TextFile::getNumberOfWords() const {
+    return m_word_count;
+}
+
+int TextFile::getNumberofCharacters() const {
+    return m_character_count;
 }
 
 int TextFile::getParagraphLength(size_t index) const {

@@ -2,5 +2,4 @@
 
 void ParagraphSplittingAction::applyTo(EditorState& state) {
     state.splitAtCursor();
-    state.getFile().setHasUnsavedChanges(true);
 }

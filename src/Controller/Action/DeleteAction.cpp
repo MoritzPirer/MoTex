@@ -18,5 +18,4 @@ void DeleteAction::applyTo(EditorState& state) {
     state.deleteRange(start, end);
     state.moveCursorLeft();
 
-    state.getFile().setHasUnsavedChanges(true);
 }

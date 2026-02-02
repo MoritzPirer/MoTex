@@ -21,13 +21,12 @@ namespace {
 
 
 TextFile FileHandler::openFile(const std::string& file_path) {
-    TextFile file(file_path);
-
+    
     if (!std::filesystem::exists(file_path)) {
-        file.writeToEnd("");
-        return file;
+        return createFile(file_path);
     }
-
+    
+    TextFile file(file_path, SaveState::SAVED);
     std::ifstream input_file(file_path);
     if (!input_file.is_open()) {
         //MODO HANDLE THIS
@@ -40,6 +39,7 @@ TextFile FileHandler::openFile(const std::string& file_path) {
         file.writeToEnd(line);
     }
 
+    file.setSaveState(SaveState::SAVED);
     file.calculateMetadata();
 
     input_file.close();
@@ -47,7 +47,7 @@ TextFile FileHandler::openFile(const std::string& file_path) {
 }
 
 TextFile FileHandler::createFile(std::filesystem::path file_path) {
-    TextFile file(file_path);
+    TextFile file(file_path, SaveState::NEVER_SAVED);
     file.writeToEnd("");
     return file;
 }
@@ -78,7 +78,7 @@ void FileHandler::saveFile(TextFile& file) {
             }
         }
 
-        file.setHasUnsavedChanges(false);
+        file.setSaveState(SaveState::SAVED);
 
         output_file.close();
     }

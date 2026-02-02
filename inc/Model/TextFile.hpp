@@ -17,24 +17,28 @@
 #include <vector>
 
 #include "../Shared/Position.hpp"
+#include "SaveState.hpp"
 
 class TextFile {
 private:
     std::filesystem::path m_absolute_file_path;
     std::vector<std::string> m_file_content;
-    bool m_has_unsaved_changes;
+    
+    SaveState m_save_state;
+
     size_t m_word_count;
     size_t m_character_count;
 
-
 public:
     TextFile() = default;
-    TextFile(const std::string& file_name);
-    TextFile(std::filesystem::path file_path);
+    TextFile(const std::string& file_name, SaveState save_state);
+    TextFile(std::filesystem::path file_path, SaveState state);
 
     void setFilepath(std::filesystem::path new_absolute_file_path);
     const std::filesystem::path& getFilepath() const;
-    void setHasUnsavedChanges(bool has_unsaved_changes);
+
+    void setSaveState(SaveState save_state) { m_save_state = save_state; }
+    SaveState getSaveState() const { return m_save_state; }
 
     /// @brief add a new line at the end of the file
     /// @param line the line to add
@@ -54,6 +58,9 @@ public:
     void joinToPrevious(int paragraph_index);
     
     int getNumberOfParagrahps() const;
+    int getNumberOfWords() const;
+    int getNumberofCharacters() const;
+
     int getParagraphLength(size_t index) const;
     const std::string& getParagraph(size_t index) const;
 
@@ -63,6 +70,7 @@ public:
     size_t visualLinesOfParagraph(size_t line_index, int screen_width) const;
 
     bool isValidPosition(Position position);
+
 };
 
 #endif //TEXT_FILE_HPP

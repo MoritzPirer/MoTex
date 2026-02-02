@@ -1,0 +1,27 @@
+///
+/// @file: StringHelpers.hpp
+/// @description: helper functions for working with std::strings
+///
+/// @date: 2026-02-02
+/// @author: Moritz Pirer
+///
+
+#ifndef STRING_HELPERS_HPP
+#define STRING_HELPERS_HPP
+
+#include <string>
+
+namespace StringHelpers {
+
+    /// @brief return a string of length total_width with str on the left, filled with pad_with. If str is 
+    ///  longer than total_width, the first total_width chars of str will be chosen
+    /// @param str the string to left-align
+    /// @param total_width how wide the new string should be, including the padding 
+    /// @param pad_with the char to fill the space with
+    /// @return a string with str on the left 
+    std::string leftAlign(const std::string& str, unsigned int total_width, const char& pad_with = ' ');
+
+    std::string rightAlign(const std::string& str, unsigned int total_width, const char& pad_with = ' ');
+}; //namespace StringHelpers
+
+#endif //STRING_HELPERS_HPP

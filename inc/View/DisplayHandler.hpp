@@ -31,7 +31,7 @@ public:
     /// @param start_visual_row what row to start drawing. Gets updated to reflect the new
     ///     starting position after rendering this paragraph
     /// @param line the line to render
-    void renderLine(int& start_visual_row, const std::string& line);
+    void renderLine(int start_visual_row, const std::string& line);
 
     void renderModeLabel(const std::string& label);
 };

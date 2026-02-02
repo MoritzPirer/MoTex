@@ -17,19 +17,24 @@
 class RenderInfo {
 private:
     std::vector<std::string> m_visual_rows;
+
+    std::vector<std::string> m_metadata_rows;
     std::string m_mode_label;
     Position m_cursor_position;
 
 public:
     RenderInfo(std::vector<std::string> visual_rows,
-        std::string mode_label, Position cursor_position);
+        std::vector<std::string> metadata_rows, Position cursor_position);
 
     RenderInfo(const RenderInfo&) = default;
     ~RenderInfo() = default;
 
     const std::string& getVisualRow(int index) const;
     int getRowCount() const;
-    const std::string& getModeLabel() const;
+    
+    const std::string& getMetadataRow(int index) const;
+    int getMetadataRowCount() const;
+
     const Position& getCursorPosition() const;
 };
 

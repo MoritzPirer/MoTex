@@ -24,7 +24,7 @@ private:
 
     void renderText(const RenderInfo& render_info);
     void renderCursor(const RenderInfo& render_info);
-    void renderModeLabel(const RenderInfo& render_info);
+    void renderMetadata(const RenderInfo& render_info);
 public:
     UiHandler() = default;
     UiHandler(const UiHandler&) = delete;

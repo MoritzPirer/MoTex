@@ -11,7 +11,7 @@ void DisplayHandler::renderCursor(Position screen_position) {
     curs_set(1);
 }
 
-void DisplayHandler::renderLine(int& start_visual_row, const std::string& line) {
+void DisplayHandler::renderLine(int start_visual_row, const std::string& line) {
     mvprintw(start_visual_row, 0, "%s", line.c_str());
 }
 
