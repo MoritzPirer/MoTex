@@ -92,80 +92,112 @@ std::vector<std::string> EditorController::calculateFileContentInfo(ScreenSize a
     bool show_character_count = true;
     bool show_word_count = true;
     bool show_paragraph_count = true;
+    bool show_cursor_position = true;
 
-    std::string file_content_info; 
+    std::vector<std::string> parts;
 
     if (show_character_count) {
         int character_count = m_state.getNumberOfCharacters();
-        file_content_info += std::to_string(character_count) + " character(s)"
-            + (show_word_count? " | " : "");
+        parts.push_back(std::to_string(character_count) + " character(s)");
     }
 
     if (show_word_count) {
         int word_count = m_state.getNumberOfWords();
-        file_content_info += std::to_string(word_count) + " word(s)"
-            + (show_paragraph_count? " | " : "");
+        parts.push_back(std::to_string(word_count) + " word(s)");
     }
 
-    if(show_paragraph_count) {
-        file_content_info += std::to_string(m_state.getNumberOfParagrahps()) + " paragraph(s)";
+    if (show_paragraph_count) {
+        parts.push_back(std::to_string(m_state.getNumberOfParagrahps()) + " paragraph(s)");
     }
 
+    if (show_cursor_position) {
+        parts.push_back("Cursor is in line / column: " +
+            m_state.getCursor().getPosition().format());
+    }
+    
+    std::string file_content_info = StringHelpers::join(parts, " | "); 
     return splitIntoRows(file_content_info, 0, actual_size.width);
 }
 
-std::string EditorController::getSaveStateIndicator() {
+std::string EditorController::getSaveStateIcon() {
     switch (m_state.getSaveState()) {
-        case SaveState::NEVER_SAVED: return "[!] Never saved";
-        case SaveState::UNSAVED_CHANGES: return "[*] Unsaved changes";
-        case SaveState::SAVED: return "[=] All changes saved";
+        case SaveState::NEVER_SAVED: return "!";
+        case SaveState::UNSAVED_CHANGES: return "*";
+        case SaveState::SAVED: return "=";
         default:
             throw std::logic_error("Save state had an unknown value!");
     }
 }
 
+std::string EditorController::getSaveStateDescription() {
+    switch (m_state.getSaveState()) {
+        case SaveState::NEVER_SAVED: return "Never saved";
+        case SaveState::UNSAVED_CHANGES: return "Unsaved changes";
+        case SaveState::SAVED: return "All changes saved";
+        default:
+            throw std::logic_error("Save state had an unknown value!");
+    }
+}
+
+void EditorController::addEditorVersionTo(std::string& metadata_line, ScreenSize actual_size) {
+    bool show_version = true;
+    if (!show_version) {
+        return;
+    }
+
+    const size_t min_padding = 5;
+
+    std::string version_string = getVersion();
+    int space_for_version = actual_size.width - static_cast<int>(metadata_line.length());
+    
+    //more space for version needed
+    if (static_cast<size_t>(space_for_version) < min_padding + version_string.length()
+        || space_for_version < 0) {
+            
+        int needed_space = (actual_size.width - metadata_line.length() % actual_size.width);
+        metadata_line += std::string(needed_space, ' ');
+        version_string = StringHelpers::rightAlign(version_string, actual_size.width); 
+    }
+    // enough space, place version at right end
+    else {
+        metadata_line =
+            StringHelpers::leftAlign(metadata_line, actual_size.width - version_string.length());
+    }
+
+    metadata_line += version_string;
+}
+
 std::vector<std::string> EditorController::calculateFileStatusInfo(ScreenSize actual_size) {
     bool show_editor_mode = true;
     bool show_file_name = true; 
-    bool show_save_state = true;
-    bool show_vesion = true;
+    bool show_save_state_icon = true;
+    bool show_save_state_desctiption = true;
+    bool show_version = true;
 
-    std::string file_status_info;
-
+    std::vector<std::string> parts;
     if (show_editor_mode) {
-        file_status_info += "--" + m_mode_manager.getModeLabel() + "--    ";
+        parts.push_back(m_mode_manager.getModeLabel());
     }
 
     if (show_file_name) {
-        file_status_info += m_state.getFileName() + "    ";
+        parts.push_back(m_state.getFileName());
     }
 
-    if (show_save_state) {
-        file_status_info += getSaveStateIndicator() + "    ";
-    }
+    if (show_save_state_icon) {
+        std::string part = "[" + getSaveStateIcon() + "]";
 
-    if (show_vesion) {
-        const size_t min_padding = 10;
-
-        std::string version_string = getVersion();
-        int space_for_version = actual_size.width - static_cast<int>(file_status_info.length());
-        
-        //more space for version needed
-        if (static_cast<size_t>(space_for_version) < min_padding + version_string.length()
-            || space_for_version < 0) {
-                
-            int needed_space = (actual_size.width - file_status_info.length() % actual_size.width);
-            file_status_info += std::string(needed_space, ' ');
-            version_string = StringHelpers::rightAlign(version_string, actual_size.width); 
-        
-        }
-        // enough space, place version at right end
-        else {
-            file_status_info = StringHelpers::leftAlign(file_status_info, actual_size.width - version_string.length());
+        if (show_save_state_desctiption) {
+            part += " " + getSaveStateDescription();
         }
 
-        file_status_info += version_string;
+        parts.push_back(part);
     }
+
+    if (show_version) {
+        parts.push_back(getVersion());
+    }
+
+    std::string file_status_info = StringHelpers::join(parts, " | ");
 
     return splitIntoRows(file_status_info, 0, actual_size.width);
 }
@@ -173,18 +205,19 @@ std::vector<std::string> EditorController::calculateFileStatusInfo(ScreenSize ac
 std::vector<std::string> EditorController::calculateMetadataRows(ScreenSize actual_size) {
     bool show_seperator = true;
 
-    std::vector<std::string> metadata_rows;
-    metadata_rows.emplace_back(actual_size.width, (show_seperator? '-' : ' '));
-    
-    std::vector<std::string> file_info_rows = calculateFileContentInfo(actual_size);
-    metadata_rows.insert(metadata_rows.end(), file_info_rows.begin(), file_info_rows.end());
-    metadata_rows.push_back("");
-    
-    std::vector<std::string> file_status_rows = calculateFileStatusInfo(actual_size);
-    metadata_rows.insert(metadata_rows.end(), file_status_rows.begin(), file_status_rows.end());
-    metadata_rows.push_back("");
+    std::vector<std::string> result;
 
-    return metadata_rows;
+    result.emplace_back(actual_size.width, (show_seperator? '-' : ' '));
+    
+    auto addContent = [&](const std::vector<std::string>& rows) {
+        result.insert(result.end(), rows.begin(), rows.end());
+        result.push_back("");
+    };
+
+    addContent(calculateFileContentInfo(actual_size));
+    addContent(calculateFileStatusInfo(actual_size));
+
+    return result;
 }
 
 RenderInfo EditorController::calculateRenderInfo(ScreenSize actual_size) {

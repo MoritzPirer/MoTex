@@ -23,7 +23,7 @@ private:
     UiHandler m_ui_handler;
       
     /// @brief one true source for editor version
-    std::string getVersion() const { return "MoTex version 0.2.1"; }
+    std::string getVersion() const { return "version 0.2.1"; }
 
     /// @brief calculates the position of the first character that should be visible on screen.
     ///     the calculation ensures that the cursor is always on the upper half of the screen
@@ -45,10 +45,13 @@ private:
     /// @brief calculates the position on the screen the cursor should be drawn to
     ///     accounting for off-screen lines and line wrapping
     Position calculateScreenPositionOfCursor(ScreenSize text_area_size);
-    
+   
     std::vector<std::string> calculateFileContentInfo(ScreenSize actual_size);
 
-    std::string getSaveStateIndicator();
+    std::string getSaveStateIcon();
+    std::string getSaveStateDescription();
+
+    void addEditorVersionTo(std::string& metadata_line, ScreenSize actual_size);
 
     std::vector<std::string> calculateFileStatusInfo(ScreenSize actual_size);
 

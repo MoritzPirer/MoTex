@@ -27,3 +27,19 @@ std::string StringHelpers::rightAlign(const std::string& str,
 
     return output; 
 }
+
+
+std::string StringHelpers::join(
+    const std::vector<std::string>& to_join, const std::string& join_with) {
+
+    std::string output;
+
+    for (size_t i = 0; i < to_join.size(); i++) {
+        output += to_join.at(i);
+        if (i < to_join.size() - 1) {
+            output += join_with;
+        }
+    }
+
+    return output;
+}

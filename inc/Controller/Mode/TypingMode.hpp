@@ -25,7 +25,7 @@ public:
     /// @return the next mode and the action to execute 
     std::pair<ModeType, std::vector<std::shared_ptr<Action>>> parseInput(int input, ScreenSize size) override;
 
-    std::string getModeLabel() const override { return "TYPING"; }
+    std::string getModeLabel() const override { return "TYPING MODE"; }
 };
 
 #endif //TYPING_MODE_HPP

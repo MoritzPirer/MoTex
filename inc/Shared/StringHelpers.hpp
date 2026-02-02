@@ -10,6 +10,7 @@
 #define STRING_HELPERS_HPP
 
 #include <string>
+#include <vector>
 
 namespace StringHelpers {
 
@@ -22,6 +23,8 @@ namespace StringHelpers {
     std::string leftAlign(const std::string& str, unsigned int total_width, const char& pad_with = ' ');
 
     std::string rightAlign(const std::string& str, unsigned int total_width, const char& pad_with = ' ');
+
+    std::string join(const std::vector<std::string>& to_join, const std::string& join_with = ", ");
 }; //namespace StringHelpers
 
 #endif //STRING_HELPERS_HPP

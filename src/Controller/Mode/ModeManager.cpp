@@ -28,5 +28,5 @@ std::vector<std::shared_ptr<Action>> ModeManager::convertToAction(int input, Scr
 }
 
 std::string ModeManager::getModeLabel() const {
-    return m_current_mode->getModeLabel();
+    return "--" + m_current_mode->getModeLabel() + "--";
 }
