@@ -3,8 +3,8 @@
 #include "../../inc/View/UiHandler.hpp"
 
 void UiHandler::renderText(const RenderInfo& render_info) {
-    for (int i = 0; i < render_info.getRowCount(); i++) {
-        m_display_handler.renderLine(i, render_info.getVisualRow(i));
+    for (int i = 0; i < render_info.getTextRowCount(); i++) {
+        m_display_handler.renderLine(i, render_info.getTextRow(i));
     }
 }
 
@@ -13,9 +13,17 @@ void UiHandler::renderCursor(const RenderInfo& render_info) {
 }
 
 void UiHandler::renderMetadata(const RenderInfo& render_info) {
-    int metadata_offset = render_info.getRowCount();
+    int metadata_offset = render_info.getTextRowCount();
+    move(metadata_offset, 0);
+
     for (int i = 0; i < render_info.getMetadataRowCount(); i++) {
-        m_display_handler.renderLine(i + metadata_offset, render_info.getMetadataRow(i));
+        for (auto& [content, role] : render_info.getMetadataRow(i)) {
+            m_display_handler.setStyle(role);
+            m_display_handler.addContent(content);
+        }  
+        metadata_offset++;
+        // addstr(std::to_string(render_info.getMetadataRowCount()).c_str());
+        move(metadata_offset, 0);
     }
 }
 

@@ -10,7 +10,7 @@
 #define SAVE_STATE_HPP
 
 enum class SaveState {
-    NEVER_SAVED,
+    NEW_FILE,
     UNSAVED_CHANGES,
     SAVED
 };

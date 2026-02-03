@@ -13,26 +13,27 @@
 #include <string>
 
 #include "Position.hpp"
+#include "../Controller/Control/RenderChunk.hpp"
 
 class RenderInfo {
 private:
     std::vector<std::string> m_visual_rows;
 
-    std::vector<std::string> m_metadata_rows;
+    std::vector<std::vector<RenderChunk>> m_metadata_rows;
     std::string m_mode_label;
     Position m_cursor_position;
 
 public:
     RenderInfo(std::vector<std::string> visual_rows,
-        std::vector<std::string> metadata_rows, Position cursor_position);
+        std::vector<std::vector<RenderChunk>> metadata_rows, Position cursor_position);
 
     RenderInfo(const RenderInfo&) = default;
     ~RenderInfo() = default;
 
-    const std::string& getVisualRow(int index) const;
-    int getRowCount() const;
+    const std::string& getTextRow(int index) const;
+    int getTextRowCount() const;
     
-    const std::string& getMetadataRow(int index) const;
+    const std::vector<RenderChunk>& getMetadataRow(int index) const;
     int getMetadataRowCount() const;
 
     const Position& getCursorPosition() const;

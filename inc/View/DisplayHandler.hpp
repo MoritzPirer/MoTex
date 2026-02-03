@@ -13,6 +13,7 @@
 
 #include "../Shared/ScreenSize.hpp"
 #include "../Shared/Position.hpp"
+#include "../Controller/Control/TextRole.hpp"
 
 class DisplayHandler {
 public:
@@ -33,7 +34,8 @@ public:
     /// @param line the line to render
     void renderLine(int start_visual_row, const std::string& line);
 
-    void renderModeLabel(const std::string& label);
+    void setStyle(TextRole role);
+    void addContent(const std::string& content);
 };
 
 #endif //DISPLAY_HANDLER_HPP

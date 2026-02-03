@@ -34,11 +34,22 @@ const std::filesystem::path& TextFile::getFilepath() const {
     return m_absolute_file_path;
 }
 
+void TextFile::markAsSaved() {
+    m_save_state = SaveState::SAVED;
+}
+
+void TextFile::markAsChanged() {
+    // NEW_FILE is stronger than UNSAVED_CHANGES
+    if (m_save_state != SaveState::NEW_FILE) {
+        m_save_state = SaveState::UNSAVED_CHANGES;
+    }
+}
+
 
 void TextFile::writeToEnd(const std::string& line) {
     m_file_content.emplace_back(line);
     
-    if (m_save_state != SaveState::NEVER_SAVED) {
+    if (m_save_state != SaveState::NEW_FILE) {
         m_save_state = SaveState::UNSAVED_CHANGES;
     }
     
@@ -53,7 +64,7 @@ void TextFile::insertCharacterAt(char character_to_add, Position position) {
     std::string& line = m_file_content.at(position.row);
     line.insert(line.begin() + position.column, character_to_add);
     
-    m_save_state = SaveState::UNSAVED_CHANGES;
+    markAsChanged();
     calculateMetadata();
 }
 
@@ -76,7 +87,7 @@ void TextFile::deleteRange(Position start, Position end) {
             m_file_content.erase(m_file_content.begin() + start.row);
         } 
         
-        m_save_state = SaveState::UNSAVED_CHANGES;
+        markAsChanged();
         calculateMetadata();
 
         return;
@@ -95,7 +106,7 @@ void TextFile::deleteRange(Position start, Position end) {
         line.erase(line.begin() + start_of_erase, line.begin() + end_of_erase);
     }
 
-    m_save_state = SaveState::UNSAVED_CHANGES;
+    markAsChanged();
     calculateMetadata();
 }
 
@@ -109,7 +120,7 @@ void TextFile::splitAt(Position first_of_new_paragraph) {
     line_to_split.erase(line_to_split.begin() + first_of_new_paragraph.column, line_to_split.end());
     m_file_content.insert(m_file_content.begin() + first_of_new_paragraph.row + 1, split_line);
     
-    m_save_state = SaveState::UNSAVED_CHANGES;
+    markAsChanged();
 }
 
 void TextFile::joinToPrevious(int paragraph_index) {
@@ -120,7 +131,7 @@ void TextFile::joinToPrevious(int paragraph_index) {
     m_file_content.at(paragraph_index - 1).append(m_file_content.at(paragraph_index));
     m_file_content.erase(m_file_content.begin() + paragraph_index);
 
-    m_save_state = SaveState::UNSAVED_CHANGES;
+    markAsChanged();
 }
 
 

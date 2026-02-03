@@ -39,7 +39,7 @@ TextFile FileHandler::openFile(const std::string& file_path) {
         file.writeToEnd(line);
     }
 
-    file.setSaveState(SaveState::SAVED);
+    file.markAsSaved();
     file.calculateMetadata();
 
     input_file.close();
@@ -47,7 +47,7 @@ TextFile FileHandler::openFile(const std::string& file_path) {
 }
 
 TextFile FileHandler::createFile(std::filesystem::path file_path) {
-    TextFile file(file_path, SaveState::NEVER_SAVED);
+    TextFile file(file_path, SaveState::NEW_FILE);
     file.writeToEnd("");
     return file;
 }
@@ -78,7 +78,7 @@ void FileHandler::saveFile(TextFile& file) {
             }
         }
 
-        file.setSaveState(SaveState::SAVED);
+        file.markAsSaved();
 
         output_file.close();
     }

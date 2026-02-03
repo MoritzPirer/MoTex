@@ -37,7 +37,11 @@ public:
     void setFilepath(std::filesystem::path new_absolute_file_path);
     const std::filesystem::path& getFilepath() const;
 
-    void setSaveState(SaveState save_state) { m_save_state = save_state; }
+    void markAsSaved();
+
+    /// @brief registers that changes have been made to the file and updates the save state
+    ///     accordingly 
+    void markAsChanged();
     SaveState getSaveState() const { return m_save_state; }
 
     /// @brief add a new line at the end of the file

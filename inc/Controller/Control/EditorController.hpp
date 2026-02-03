@@ -46,16 +46,20 @@ private:
     ///     accounting for off-screen lines and line wrapping
     Position calculateScreenPositionOfCursor(ScreenSize text_area_size);
    
-    std::vector<std::string> calculateFileContentInfo(ScreenSize actual_size);
+    std::vector<RenderChunk> getSeperatorChunks(ScreenSize actual_size);
+    std::vector<RenderChunk> getCharacterCountChunks();
+    std::vector<RenderChunk> getWordCountChunks();
+    std::vector<RenderChunk> getParagraphCountChunks();
+    std::vector<RenderChunk> getCursorPositionChunks();
+    std::vector<RenderChunk> getEditorModeChunks();
+    std::vector<RenderChunk> getFileNameChunks();
+    std::vector<RenderChunk> getSaveIconChunks();
+    std::vector<RenderChunk> getVersionChunks();
 
-    std::string getSaveStateIcon();
-    std::string getSaveStateDescription();
+    std::vector<std::vector<RenderChunk>> reorganizeMetadataRows(
+        std::vector<RenderChunk> ordered_chunks, ScreenSize actual_size);
 
-    void addEditorVersionTo(std::string& metadata_line, ScreenSize actual_size);
-
-    std::vector<std::string> calculateFileStatusInfo(ScreenSize actual_size);
-
-    std::vector<std::string> calculateMetadataRows(ScreenSize actual_size);
+    std::vector<std::vector<RenderChunk>> calculateMetadataRows(ScreenSize actual_size);
     /// @brief calculates what should be rendered to the screen
     RenderInfo calculateRenderInfo(ScreenSize actual_size);
 

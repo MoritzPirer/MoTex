@@ -54,7 +54,6 @@ std::vector<std::string> EditorController::calculateVisibleRows(ScreenSize text_
                 (is_first_paragraph? first_visible.column : 0),
                 text_area_size.width 
             );
-
             is_first_paragraph = false;
 
 
@@ -88,146 +87,196 @@ Position EditorController::calculateScreenPositionOfCursor(ScreenSize text_area_
     return {screen_row, screen_column};
 }
 
-std::vector<std::string> EditorController::calculateFileContentInfo(ScreenSize actual_size) {
-    bool show_character_count = true;
-    bool show_word_count = true;
-    bool show_paragraph_count = true;
-    bool show_cursor_position = true;
-
-    std::vector<std::string> parts;
-
-    if (show_character_count) {
-        int character_count = m_state.getNumberOfCharacters();
-        parts.push_back(std::to_string(character_count) + " character(s)");
-    }
-
-    if (show_word_count) {
-        int word_count = m_state.getNumberOfWords();
-        parts.push_back(std::to_string(word_count) + " word(s)");
-    }
-
-    if (show_paragraph_count) {
-        parts.push_back(std::to_string(m_state.getNumberOfParagrahps()) + " paragraph(s)");
-    }
-
-    if (show_cursor_position) {
-        parts.push_back("Cursor is in line / column: " +
-            m_state.getCursor().getPosition().format());
-    }
-    
-    std::string file_content_info = StringHelpers::join(parts, " | "); 
-    return splitIntoRows(file_content_info, 0, actual_size.width);
-}
-
-std::string EditorController::getSaveStateIcon() {
-    switch (m_state.getSaveState()) {
-        case SaveState::NEVER_SAVED: return "!";
-        case SaveState::UNSAVED_CHANGES: return "*";
-        case SaveState::SAVED: return "=";
-        default:
-            throw std::logic_error("Save state had an unknown value!");
-    }
-}
-
-std::string EditorController::getSaveStateDescription() {
-    switch (m_state.getSaveState()) {
-        case SaveState::NEVER_SAVED: return "Never saved";
-        case SaveState::UNSAVED_CHANGES: return "Unsaved changes";
-        case SaveState::SAVED: return "All changes saved";
-        default:
-            throw std::logic_error("Save state had an unknown value!");
-    }
-}
-
-void EditorController::addEditorVersionTo(std::string& metadata_line, ScreenSize actual_size) {
-    bool show_version = true;
-    if (!show_version) {
-        return;
-    }
-
-    const size_t min_padding = 5;
-
-    std::string version_string = getVersion();
-    int space_for_version = actual_size.width - static_cast<int>(metadata_line.length());
-    
-    //more space for version needed
-    if (static_cast<size_t>(space_for_version) < min_padding + version_string.length()
-        || space_for_version < 0) {
-            
-        int needed_space = (actual_size.width - metadata_line.length() % actual_size.width);
-        metadata_line += std::string(needed_space, ' ');
-        version_string = StringHelpers::rightAlign(version_string, actual_size.width); 
-    }
-    // enough space, place version at right end
-    else {
-        metadata_line =
-            StringHelpers::leftAlign(metadata_line, actual_size.width - version_string.length());
-    }
-
-    metadata_line += version_string;
-}
-
-std::vector<std::string> EditorController::calculateFileStatusInfo(ScreenSize actual_size) {
-    bool show_editor_mode = true;
-    bool show_file_name = true; 
-    bool show_save_state_icon = true;
-    bool show_save_state_desctiption = true;
-    bool show_version = true;
-
-    std::vector<std::string> parts;
-    if (show_editor_mode) {
-        parts.push_back(m_mode_manager.getModeLabel());
-    }
-
-    if (show_file_name) {
-        parts.push_back(m_state.getFileName());
-    }
-
-    if (show_save_state_icon) {
-        std::string part = "[" + getSaveStateIcon() + "]";
-
-        if (show_save_state_desctiption) {
-            part += " " + getSaveStateDescription();
-        }
-
-        parts.push_back(part);
-    }
-
-    if (show_version) {
-        parts.push_back(getVersion());
-    }
-
-    std::string file_status_info = StringHelpers::join(parts, " | ");
-
-    return splitIntoRows(file_status_info, 0, actual_size.width);
-}
-
-std::vector<std::string> EditorController::calculateMetadataRows(ScreenSize actual_size) {
+std::vector<RenderChunk> EditorController::getSeperatorChunks(ScreenSize actual_size) {
     bool show_seperator = true;
 
-    std::vector<std::string> result;
+    return { RenderChunk{
+        std::string(actual_size.width - 1, (show_seperator ? '-' : ' ')),
+        TextRole::UI_ELEMENT
+    }};
+}
 
-    result.emplace_back(actual_size.width, (show_seperator? '-' : ' '));
+std::vector<RenderChunk> EditorController::getCharacterCountChunks() {
+    bool show_character_count = true;
+    if (!show_character_count) {
+        return {};
+    }
+
+    int character_count = m_state.getNumberOfCharacters();
+    return {
+        {"Character(s): ", TextRole::TEXT_NORMAL},
+        {std::to_string(character_count), TextRole::TEXT_HIGHLIGHT}
+    };
+}
+
+std::vector<RenderChunk> EditorController::getWordCountChunks() {
+    bool show_word_count = true;
+    if (!show_word_count) {
+        return {};
+    }
+
+    int word_count = m_state.getNumberOfWords();
+    return {
+        {"Word(s): ", TextRole::TEXT_NORMAL},
+        {std::to_string(word_count), TextRole::TEXT_HIGHLIGHT}
+    };
+}
+
+std::vector<RenderChunk> EditorController::getParagraphCountChunks() {
+    bool show_paragraph_count = true;
+    if (!show_paragraph_count) {
+        return {};
+    }
+
+    int paragraph_count = m_state.getNumberOfParagrahps();
+    return {
+        {"Paragraph(s): ", TextRole::TEXT_NORMAL},
+        {std::to_string(paragraph_count), TextRole::TEXT_HIGHLIGHT}
+    };
+}
+
+std::vector<RenderChunk> EditorController::getCursorPositionChunks() {
+    bool show_cursor_position = true;
+
+    if (!show_cursor_position) {
+        return {};
+    }
+
+    return {
+        {"Cursor position: ", TextRole::TEXT_NORMAL},
+        {m_state.getCursor().getPosition().format(), TextRole::TEXT_HIGHLIGHT}
+    };
+}
+
+std::vector<RenderChunk> EditorController::getFileNameChunks() {
+    bool show_file_name = true;
+
+    if (!show_file_name) {
+        return {};
+    }
+
+    return {{"Currently editing " + m_state.getFileName(), TextRole::TEXT_NORMAL}};
+}
+
+std::vector<RenderChunk> EditorController::getSaveIconChunks() {
+    bool show_save_icon = true;
+    bool show_save_text = true;
+
+    if (!show_save_icon && !show_save_text) {
+        return {};
+    }
     
-    auto addContent = [&](const std::vector<std::string>& rows) {
-        result.insert(result.end(), rows.begin(), rows.end());
-        result.push_back("");
+    std::string icon = "";
+    std::string text = "";
+    TextRole role;    
+
+    switch (m_state.getSaveState()) {
+        case SaveState::NEW_FILE: {
+            icon = "[!]";
+            text = "New File";
+            role = TextRole::FILE_NEW;
+            break;
+        };
+        case SaveState::UNSAVED_CHANGES: {
+            icon = "[*]";
+            text = "Unsaved Changes";
+            role = TextRole::FILE_CHANGED;
+            break;
+        };
+        case SaveState::SAVED: {
+            icon = "[=]";
+            text = "Changes Saved";
+            role = TextRole::FILE_SAVED;
+        };
+    }
+
+    std::string message = icon + (show_save_icon && show_save_text? " " : "") + text;
+
+    return {{message, role}};
+}
+
+std::vector<RenderChunk> EditorController::getVersionChunks() {
+    bool show_version = true;
+    if (!show_version) {
+        return {};
+    }
+
+    return {{getVersion(), TextRole::TEXT_NORMAL}};
+}
+
+
+std::vector<RenderChunk> EditorController::getEditorModeChunks() {
+    bool show_editor_mode = true;
+    if (!show_editor_mode) {
+        return {};
+    }
+
+    return {{m_mode_manager.getModeLabel(), TextRole::TEXT_HIGHLIGHT}};
+}
+
+std::vector<std::vector<RenderChunk>> EditorController::reorganizeMetadataRows(
+    std::vector<RenderChunk> ordered_chunks, ScreenSize actual_size) {
+    
+    int row_length = 0;
+    int chunks_in_row = 0;
+    std::vector<std::vector<RenderChunk>> rows;
+    std::vector<RenderChunk> current_row;
+
+    int max_used_width = actual_size.width - 1;
+    int max_chunks_in_row = 900;
+
+    for (const RenderChunk& chunk : ordered_chunks) {
+        if (row_length + static_cast<int>(chunk.content.size()) > max_used_width
+            || chunks_in_row >= max_chunks_in_row) {
+            rows.push_back(current_row);
+
+            current_row.clear();
+            row_length = 0;
+            chunks_in_row = 0;
+        }
+
+        current_row.push_back(chunk);
+        row_length += chunk.content.size();
+        chunks_in_row++;
+    }
+
+    if (!current_row.empty()) {
+        rows.push_back(current_row);
+    }
+
+    return rows; 
+}
+
+std::vector<std::vector<RenderChunk>> EditorController::calculateMetadataRows(ScreenSize actual_size) {
+    std::vector<RenderChunk> ordered_chunks = getSeperatorChunks(actual_size);
+
+    auto addContent = [&](const std::vector<RenderChunk>& chunks) {
+        ordered_chunks.insert(ordered_chunks.end(), chunks.begin(), chunks.end());
+        if (chunks.size() != 0) {
+            ordered_chunks.push_back({" | ", TextRole::TEXT_NORMAL});
+        }
     };
 
-    addContent(calculateFileContentInfo(actual_size));
-    addContent(calculateFileStatusInfo(actual_size));
+    addContent(getEditorModeChunks());
+    addContent(getFileNameChunks());
+    addContent(getSaveIconChunks());
+    addContent(getCursorPositionChunks());
+    addContent(getCharacterCountChunks());
+    addContent(getWordCountChunks());
+    addContent(getParagraphCountChunks());
+    addContent(getVersionChunks());
 
-    return result;
+    return reorganizeMetadataRows(ordered_chunks, actual_size);
 }
 
 RenderInfo EditorController::calculateRenderInfo(ScreenSize actual_size) {
-    std::vector<std::string> metadata_rows = calculateMetadataRows(actual_size);
+    std::vector<std::vector<RenderChunk>> metadata_rows = calculateMetadataRows(actual_size);
     ScreenSize text_area_size = actual_size; //FUTURE: also account for line number width
     text_area_size.height -= metadata_rows.size();
 
     return {
         calculateVisibleRows(text_area_size),
-        calculateMetadataRows(actual_size),
+        metadata_rows,
         calculateScreenPositionOfCursor(text_area_size),
     };
 }
