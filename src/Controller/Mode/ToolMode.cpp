@@ -85,7 +85,14 @@ std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(i
         case 't': // temporary shortcut
             return {ModeType::TOOL_MODE, {std::make_shared<SaveAction>()}};
         case 'q':
-            return {ModeType::TOOL_MODE, {std::make_shared<QuitAction>()}};
+            return {ModeType::TOOL_MODE, {std::make_shared<QuitAction>(false)}};
+        case 'Q': // temporary, force quit
+            return {ModeType::TOOL_MODE, {std::make_shared<QuitAction>(true)}};
+        case 'T': // temporary, save& quit
+            return {ModeType::TOOL_MODE, {
+                std::make_shared<SaveAction>(),
+                std::make_shared<QuitAction>(true)
+            }};
 
         // deletion actions
         case 'x':

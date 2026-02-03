@@ -13,9 +13,9 @@
 
 class QuitAction: public Action {
 private:
-
+    bool m_force_quit;
 public:
-    QuitAction() = default;
+    QuitAction(bool force_quit);
     QuitAction(const QuitAction&) = default;
     ~QuitAction() = default;
 
