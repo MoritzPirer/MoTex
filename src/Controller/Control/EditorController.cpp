@@ -96,6 +96,31 @@ std::vector<RenderChunk> EditorController::getSeperatorChunks(ScreenSize actual_
     }};
 }
 
+std::vector<RenderChunk> EditorController::getTemporaryMessageChunks(ScreenSize actual_size) {
+    std::vector<RenderChunk> chunks;
+
+    bool has_message = false;
+    for (const std::string& message : m_state.getTemporaryMessages()) {
+        for (const std::string& message_row : splitIntoRows(message, 0, actual_size.width - 1)) {
+            chunks.push_back({
+                StringHelpers::leftAlign(message_row, actual_size.width),
+                TextRole::TEXT_HIGHLIGHT
+            });
+        }
+        
+        if (message.length() > 0) {
+            has_message = true;
+        }
+    }
+
+    if (has_message == true) {
+        std::vector<RenderChunk> seperator_chunks = getSeperatorChunks(actual_size);
+        chunks.insert(chunks.end(), seperator_chunks.begin(), seperator_chunks.end());
+    }
+
+    return chunks;
+}
+
 std::vector<RenderChunk> EditorController::getCharacterCountChunks() {
     bool show_character_count = true;
     if (!show_character_count) {
@@ -248,15 +273,16 @@ std::vector<std::vector<RenderChunk>> EditorController::reorganizeMetadataRows(
 }
 
 std::vector<std::vector<RenderChunk>> EditorController::calculateMetadataRows(ScreenSize actual_size) {
-    std::vector<RenderChunk> ordered_chunks = getSeperatorChunks(actual_size);
+    std::vector<RenderChunk> ordered_chunks; 
 
-    auto addContent = [&](const std::vector<RenderChunk>& chunks) {
+    auto addContent = [&](const std::vector<RenderChunk>& chunks, bool supress_divider = false) {
         ordered_chunks.insert(ordered_chunks.end(), chunks.begin(), chunks.end());
-        if (chunks.size() != 0) {
+        if (chunks.size() != 0 && !supress_divider) {
             ordered_chunks.push_back({" | ", TextRole::TEXT_NORMAL});
         }
     };
-
+    addContent(getSeperatorChunks(actual_size), true);
+    addContent(getTemporaryMessageChunks(actual_size), true);
     addContent(getEditorModeChunks());
     addContent(getFileNameChunks());
     addContent(getSaveIconChunks());
@@ -290,6 +316,7 @@ void EditorController::mainLoop() {
         m_ui_handler.render(render_info);
         int input = m_ui_handler.getInput();
 
+        m_state.clearTemporaryMessages();
         std::vector<std::shared_ptr<Action>> actions = m_mode_manager.convertToAction(
             input,
             m_ui_handler.screenSize()

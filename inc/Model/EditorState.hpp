@@ -23,6 +23,8 @@ private:
     Cursor m_cursor;
     bool m_is_quit;
 
+    std::vector<std::string> m_temporary_messages;
+
     bool isCursorInLastRowOfParagraph(int screen_width);
     
     /// @brief calculates the first visible char after skipping some number of visual rows
@@ -87,6 +89,11 @@ public:
     const std::string& getParagraph(size_t row) const { return m_file.getParagraph(row); }
 
     int calculateVisualLineOfCursor(int screen_width) const;
+
+
+    void addTemporaryMessage(std::string message);
+    const std::vector<std::string>& getTemporaryMessages() const;
+    void clearTemporaryMessages();
 };
 
 #endif //EDITOR_STATE_HPP

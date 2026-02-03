@@ -3,4 +3,5 @@
 
 void SaveAction::applyTo(EditorState& state) {
     FileHandler::saveFile(state.getFile());
+    state.addTemporaryMessage("Saved all changes!");
 }

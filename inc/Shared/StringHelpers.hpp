@@ -26,6 +26,8 @@ namespace StringHelpers {
 
     std::string join(const std::vector<std::string>& to_join, const std::string& join_with = ", ");
 
+    std::string padToMulitple(const std::string& to_pad, int width, const char& pad_with = ' ');
+
 }; //namespace StringHelpers
 
 #endif //STRING_HELPERS_HPP

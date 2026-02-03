@@ -47,6 +47,7 @@ private:
     Position calculateScreenPositionOfCursor(ScreenSize text_area_size);
    
     std::vector<RenderChunk> getSeperatorChunks(ScreenSize actual_size);
+    std::vector<RenderChunk> getTemporaryMessageChunks(ScreenSize actual_size);
     std::vector<RenderChunk> getCharacterCountChunks();
     std::vector<RenderChunk> getWordCountChunks();
     std::vector<RenderChunk> getParagraphCountChunks();

@@ -224,3 +224,15 @@ Position EditorState::getFirstVisibleChar(ScreenSize size) {
     
     return skipOffscreenLines(offscreen_visual_lines, size.width);
 }
+
+void EditorState::addTemporaryMessage(std::string message) {
+    m_temporary_messages.push_back(message);
+}
+
+const std::vector<std::string>& EditorState::getTemporaryMessages() const {
+    return m_temporary_messages;
+}
+
+void EditorState::clearTemporaryMessages() {
+    m_temporary_messages.clear();
+}

@@ -43,3 +43,14 @@ std::string StringHelpers::join(
 
     return output;
 }
+
+std::string StringHelpers::padToMulitple(const std::string& to_pad, int width, const char& pad_with) {
+    // int new_length = width;
+    // while (new_length < to_pad.length()) {
+    //     new_length += width;
+    // } 
+
+    int new_length = std::ceil(to_pad.length() / static_cast<float>(width)) * width;
+
+    return leftAlign(to_pad, new_length, pad_with);
+}
