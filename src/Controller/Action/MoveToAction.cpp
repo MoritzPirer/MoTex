@@ -36,7 +36,7 @@ void MoveToAction::applyTo(EditorState& state) {
     current_paragraph++;
 
     // full paragraphs
-    while (current_paragraph < state.getNumberOfParagrahps()) {
+    while (static_cast<size_t>(current_paragraph) < state.getNumberOfParagrahps()) {
         int visual_lines_of_paragraph = TextFile::visualLinesNeeded(
             state.getParagraph(current_paragraph).length(),
             m_text_area_size.width

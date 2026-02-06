@@ -2,7 +2,7 @@
 MoTex is a solo-devloped, command line-based text editor. It is written in C++20 using the `ncurses` library and drawing heavy inspiration from vi / vim
 
 ## Design philosophy
-The goal of MoTex is to provide a command system that strikes a balance between editing power and intuition and ease of use. Commands are structured with a simple and consistent grammar, and only a small number of command shortcuts are necessary to start editing, leading to a less steep learning curve.
+The goal of MoTex is to provide a command system that strikes a balance between editing power and intuition and ease of use. Commands are structured with a simple and consistent grammar, and only a small number of command shortcuts are necessary to start editing.
 
 ## Modes
 Akin to vim, MoTex uses a TOOL MODE (~vim's normal mode) that provides the commands, and a TYPING MODE (~vim's insert mode) that is used for writing text.
