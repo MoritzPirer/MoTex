@@ -13,7 +13,11 @@
 
 class ToolMode: public EditorMode {
 private:
+    ParseResult parseMouseMovement(Position click_position,
+        ScreenSize actual_size, ScreenSize text_area_size);
 
+    ParseResult parseSpecialKey(SpecialKey key, ScreenSize text_area_size);
+    ParseResult parseStandardInput(int input, ScreenSize text_area_size, const Settings& settings);
 public:
     ToolMode() = default;
     ToolMode(const ToolMode&) = default;
@@ -23,8 +27,8 @@ public:
     /// @param input the user input 
     /// @param size the current size of the writing area 
     /// @return the next mode and the action to execute 
-    std::pair<ModeType, std::vector<std::shared_ptr<Action>>> parseInput(int input,
-        ScreenSize size, Settings settings) override;
+    ParseResult parseInput(Input input, ScreenSize actual_size,
+        ScreenSize text_area_size, const Settings& settings) override;
 
     std::string getModeLabel() const override { return " TOOL MODE "; }
 };

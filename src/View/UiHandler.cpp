@@ -1,7 +1,7 @@
 #include <ncurses.h>
 
 #include "../../inc/View/UiHandler.hpp"
-#include "../../inc/Shared/SpecialInputs.hpp"
+#include "../../inc/Shared/SpecialKey.hpp"
 
 void UiHandler::renderLine(int start_visual_row, const std::string& line) {
     mvprintw(start_visual_row, 0, "%s", line.c_str());
@@ -104,31 +104,61 @@ void UiHandler::renderAside(const RenderInfo& render_info) {
 
 }
 
-int UiHandler::translateInput(int original_input) {
+Input UiHandler::translateMouseEvent() {
+    MEVENT event;
+
+    if (getmouse(&event) != OK) {
+        return {};
+    }
+    
+    /// left click
+    if (event.bstate & BUTTON1_CLICKED) {
+        return {Position{event.y, event.x}};
+    }
+
+    /// mousewheel up
+    if (event.bstate & BUTTON4_PRESSED) {
+        return {SpecialKey::ARROW_UP};
+    }
+
+    // mousewheel down -> probably not portable
+    if (event.bstate & (1 << 21)) {
+        return {SpecialKey::ARROW_DOWN};
+    }
+
+    return {};
+}
+
+Input UiHandler::translateInput(int original_input) {
+    if (original_input == KEY_MOUSE) {
+        return translateMouseEvent();
+    }
+
     switch (original_input) {
         case '\n':
         case '\r':
         case KEY_ENTER:
-            return INPUT_ENTER;
+            return {SpecialKey::ENTER};
         
         case 27:
-            return INPUT_ESCAPE;
+            return {SpecialKey::ESCAPE};
         
         case KEY_BACKSPACE:
         case 127:
         case '\b':
-            return INPUT_BACKSPACE;
+            return {SpecialKey::BACKSPACE};
 
         case KEY_LEFT:
-            return ARROW_LEFT;
+            return {SpecialKey::ARROW_LEFT};
         case KEY_RIGHT:
-            return ARROW_RIGHT;
+            return {SpecialKey::ARROW_RIGHT};
         case KEY_UP:
-            return ARROW_UP;
+            return {SpecialKey::ARROW_UP};
         case KEY_DOWN:
-            return ARROW_DOWN;
+            return {SpecialKey::ARROW_DOWN};
+
         default:
-            return original_input;
+            return {original_input};
     }
 }
 
@@ -147,6 +177,6 @@ void UiHandler::render(const RenderInfo& render_info) {
     refresh();
 }
 
-int UiHandler::getInput() {
+Input UiHandler::getInput() {
     return translateInput(getch());
 }

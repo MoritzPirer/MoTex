@@ -51,11 +51,12 @@ void EditorController::mainLoop() {
         ScreenSize total_size = m_ui_handler.screenSize();
         RenderInfo render_info = calculateRenderInfo(total_size);
         m_ui_handler.render(render_info);
-        int input = m_ui_handler.getInput();
+        Input input = m_ui_handler.getInput();
 
         m_state.clearTemporaryMessages();
         vector<std::shared_ptr<Action>> actions = m_mode_manager.convertToAction(
             input,
+            total_size,
             calculateTextAreaSize(render_info, total_size),
             m_settings
         );

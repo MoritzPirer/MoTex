@@ -13,6 +13,7 @@
 
 #include "../Shared/ScreenSize.hpp"
 #include "../Shared/RenderInfo.hpp"
+#include "../Shared/Input.hpp"
 
 class UiHandler {
 private:
@@ -35,8 +36,9 @@ private:
 
     /// @brief translates special keys (e.g. escape, backspace) to the internal
     ///     standard defined in Shared/SpecialInputs.hpp. Normal keys are unaffected
-    int translateInput(int original_input);
+    Input translateInput(int original_input);
 
+    Input translateMouseEvent();
 public:
     UiHandler() = default;
     UiHandler(const UiHandler&) = delete;
@@ -46,7 +48,7 @@ public:
     void render(const RenderInfo& render_info);
 
     /// @brief waits for the user to input a key and then returns it
-    int getInput();
+    Input getInput();
 
 };
 

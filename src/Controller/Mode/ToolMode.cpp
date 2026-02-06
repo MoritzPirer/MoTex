@@ -8,28 +8,72 @@
 #include "../../../inc/Controller/Action/ChunkwiseMoveAction.hpp"
 #include "../../../inc/Controller/Action/DirectionalMoveAction.hpp"
 #include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
+#include "../../../inc/Controller/Action/MoveToAction.hpp"
 
 #include "../../../inc/Controller/Settings/Settings.hpp"
-#include "../../../inc/Shared/SpecialInputs.hpp"
+#include "../../../inc/Shared/SpecialKey.hpp"
 
 using std::make_shared;
 
-std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(
-    int input, ScreenSize size, Settings settings) {
+ParseResult ToolMode::parseMouseMovement(Position click_position,
+    ScreenSize actual_size, ScreenSize text_area_size) {
+
+    /// validate click position
+    int aside_width = actual_size.width - text_area_size.width;
+
+    if (click_position.column < aside_width || click_position.column > actual_size.width) {
+        return {ModeType::TOOL_MODE, {}};
+    }
+    if (click_position.row < 0 || click_position.row > text_area_size.height) {
+        return {ModeType::TOOL_MODE, {}};
+    }
+
+    Position adjusted_position = {
+        click_position.row,
+        click_position.column - aside_width
+    };
+
+    return {ModeType::TOOL_MODE, {make_shared<MoveToAction>(text_area_size, adjusted_position)}};
+}
+
+ParseResult ToolMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_size) {
+    switch (key) {
+        case SpecialKey::ARROW_LEFT: {
+            return {ModeType::TOOL_MODE, {
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::BACKWARD)
+            }};
+        }
+        case SpecialKey::ARROW_DOWN: {
+            return {ModeType::TOOL_MODE, {
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::DOWN)
+            }};
+        }
+        case SpecialKey::ARROW_UP: {
+            return {ModeType::TOOL_MODE, {
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::UP)
+            }};
+        }
+        case SpecialKey::ARROW_RIGHT: {
+            return {ModeType::TOOL_MODE, {
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::FORWARD)
+            }};
+        }
+        default:
+            return {ModeType::TOOL_MODE, {}};
+    }
+}
+
+ParseResult ToolMode::parseStandardInput(int input, ScreenSize text_area_size, const Settings& settings) {
     switch (input) {
         // move actions
-        case ARROW_LEFT:
         case 'h':
-            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(size, Direction::BACKWARD)}};
-        case ARROW_DOWN:
+            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(text_area_size, Direction::BACKWARD)}};
         case 'j':
-            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(size, Direction::DOWN)}};
-        case ARROW_UP:
+            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(text_area_size, Direction::DOWN)}};
         case 'k':
-            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(size, Direction::UP)}};
-        case ARROW_RIGHT:
+            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(text_area_size, Direction::UP)}};
         case 'l':
-            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(size, Direction::FORWARD)}};
+            return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(text_area_size, Direction::FORWARD)}};
         case 'g':
             return {ModeType::TOOL_MODE, {make_shared<ChunkwiseMoveAction>(Scope::FILE, Destination::START)}};
         case 'G':
@@ -41,34 +85,34 @@ std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(
 
         case 'w':
             return {ModeType::TOOL_MODE, {
-                make_shared<DirectionalMoveAction>(Scope::WORD, Destination::START, size, Direction::FORWARD)
+                make_shared<DirectionalMoveAction>(Scope::WORD, Destination::START, text_area_size, Direction::FORWARD)
             }};
         case 'W':
             return {ModeType::TOOL_MODE, {
-                make_shared<DirectionalMoveAction>(Scope::EXPRESSION, Destination::START, size, Direction::FORWARD)
+                make_shared<DirectionalMoveAction>(Scope::EXPRESSION, Destination::START, text_area_size, Direction::FORWARD)
             }};
         case 'b':
             return {ModeType::TOOL_MODE, {
-                make_shared<DirectionalMoveAction>(Scope::WORD, Destination::START, size, Direction::BACKWARD)
+                make_shared<DirectionalMoveAction>(Scope::WORD, Destination::START, text_area_size, Direction::BACKWARD)
             }};
         case 'B':
             return {ModeType::TOOL_MODE, {
-                make_shared<DirectionalMoveAction>(Scope::EXPRESSION, Destination::START, size, Direction::BACKWARD)
+                make_shared<DirectionalMoveAction>(Scope::EXPRESSION, Destination::START, text_area_size, Direction::BACKWARD)
             }};
         case 'e':
             return {ModeType::TOOL_MODE, {
-                make_shared<DirectionalMoveAction>(Scope::WORD, Destination::END, size, Direction::FORWARD)
+                make_shared<DirectionalMoveAction>(Scope::WORD, Destination::END, text_area_size, Direction::FORWARD)
             }};
         case 'E':
             return {ModeType::TOOL_MODE, {
-                make_shared<DirectionalMoveAction>(Scope::EXPRESSION, Destination::END, size, Direction::FORWARD)
+                make_shared<DirectionalMoveAction>(Scope::EXPRESSION, Destination::END, text_area_size, Direction::FORWARD)
             }};
 
         // mode switching actions
         case 'i':
             return {ModeType::TYPING_MODE, {}};
         case 'a':
-            return {ModeType::TYPING_MODE, {make_shared<CharwiseMoveAction>(size, Direction::FORWARD)}};
+            return {ModeType::TYPING_MODE, {make_shared<CharwiseMoveAction>(text_area_size, Direction::FORWARD)}};
         case 'I':
             return {ModeType::TYPING_MODE, {make_shared<ChunkwiseMoveAction>(Scope::PARAGRAPH, Destination::START)}};
         case 'A':
@@ -82,7 +126,7 @@ std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(
             return {ModeType::TYPING_MODE, {
                 make_shared<ChunkwiseMoveAction>(Scope::PARAGRAPH, Destination::START),
                 make_shared<ParagraphSplittingAction>(),
-                make_shared<CharwiseMoveAction>(size, Direction::UP)
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::UP)
             }};
 
         // file actions
@@ -109,5 +153,22 @@ std::pair<ModeType, std::vector<std::shared_ptr<Action>>> ToolMode::parseInput(
         default:
             return {ModeType::TOOL_MODE, {}};
         }
+}
 
+ParseResult ToolMode::parseInput(
+    Input input, ScreenSize actual_size, ScreenSize text_area_size, const Settings& settings) {
+    
+    if (input.mouse_position.has_value()) {
+        return parseMouseMovement(*input.mouse_position, actual_size, text_area_size);
+    }
+
+    if (input.special_key.has_value()) {
+        return parseSpecialKey(*input.special_key, text_area_size);
+    }
+
+    if (input.standard_input.has_value()) {
+        return parseStandardInput(*input.standard_input, text_area_size, settings);
+    }
+    
+    return {ModeType::TOOL_MODE, {}};
 }

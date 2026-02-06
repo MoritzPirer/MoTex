@@ -13,6 +13,7 @@
 
 #include "../Action/Action.hpp"
 #include "EditorMode.hpp"
+#include "../../Shared/Input.hpp"
 
 class ModeManager {
 private:
@@ -30,7 +31,7 @@ public:
     /// @param size the current size of the text area
     /// @return a set of actions to execute
     std::vector<std::shared_ptr<Action>> convertToAction(
-        int input, ScreenSize size, Settings settings);
+        Input input, ScreenSize actual_size, ScreenSize text_area_size, Settings settings);
     
     /// @return the name of the current mode
     std::string getModeLabel() const;

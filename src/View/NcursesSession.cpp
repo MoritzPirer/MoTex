@@ -8,7 +8,8 @@ NcursesSession::NcursesSession() {
         return;
     } 
     initialized = true;
-    raw();
+
+    cbreak();
     keypad(stdscr, TRUE);
     noecho();
     set_escdelay(25);
@@ -18,6 +19,7 @@ NcursesSession::NcursesSession() {
     start_color();
     use_default_colors(); 
 
+    /// colors for rendering
     init_pair(1, COLOR_WHITE,   -1); // Text Normal
     init_pair(2, COLOR_MAGENTA, -1); // Text Highlight
     init_pair(3, COLOR_YELLOW,  -1); // changed file
