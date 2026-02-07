@@ -10,12 +10,13 @@
 #define QUIT_ACTION_HPP
 
 #include "Action.hpp"
+#include "ActionOptions/QuitMode.hpp"
 
 class QuitAction: public Action {
 private:
-    bool m_force_quit;
+    QuitMode m_quit_mode;
 public:
-    QuitAction(bool force_quit);
+    QuitAction(QuitMode quit_mode);
     QuitAction(const QuitAction&) = default;
     ~QuitAction() = default;
 

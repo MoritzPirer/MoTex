@@ -9,11 +9,12 @@
 #ifndef CHARACTERWISE_MOVE_ACTION_HPP
 #define CHARACTERWISE_MOVE_ACTION_HPP
 
-#include "SizeDependantAction.hpp"
+#include "Action.hpp"
 #include "../../Shared/Direction.hpp"
 
-class CharwiseMoveAction: public SizeDependantAction {
+class CharwiseMoveAction: public Action{
 private:
+    ScreenSize m_size;
     Direction m_direction;
 public:
     CharwiseMoveAction(ScreenSize size, Direction direction);

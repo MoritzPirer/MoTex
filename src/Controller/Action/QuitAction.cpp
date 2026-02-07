@@ -1,11 +1,11 @@
 #include "../../../inc/Controller/Action/QuitAction.hpp"
 
-QuitAction::QuitAction(bool force_quit):
-    m_force_quit{force_quit}
+QuitAction::QuitAction(QuitMode quit_mode):
+    m_quit_mode{quit_mode}
     {}
 
 void QuitAction::applyTo(EditorState& state) {
-    if (m_force_quit == false && state.getSaveState() != SaveState::SAVED) {
+    if (m_quit_mode != QuitMode::FORCE_QUIT && state.getSaveState() != SaveState::SAVED) {
         state.addTemporaryMessage("You have unsaved changes! Save or use [shortcut] to quit without saving!");
         return;
     }

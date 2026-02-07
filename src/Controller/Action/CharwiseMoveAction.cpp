@@ -1,16 +1,16 @@
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
 
 CharwiseMoveAction::CharwiseMoveAction(ScreenSize size, Direction direction):
-    SizeDependantAction{size},
+    m_size{size},
     m_direction{direction} {}
 
 void CharwiseMoveAction::applyTo(EditorState& state) {
     switch (m_direction) {
-        case Direction::FORWARD: {
+        case Direction::RIGHT: {
             state.moveCursorRight();
             break;
         }
-        case Direction::BACKWARD: {
+        case Direction::LEFT: {
             state.moveCursorLeft();
             break;
         }

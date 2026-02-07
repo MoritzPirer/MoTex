@@ -10,8 +10,8 @@
 #define DIRECTION_HPP
 
 enum class Direction {
-    FORWARD,
-    BACKWARD,
+    RIGHT,
+    LEFT,
     UP,
     DOWN
 };

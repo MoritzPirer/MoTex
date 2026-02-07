@@ -102,7 +102,7 @@ void EditorState::moveCursor(Direction direction, int screen_width) {
             moveCursorUp(screen_width);
             return;
         }
-        case Direction::FORWARD: {
+        case Direction::RIGHT: {
             moveCursorRight();
             return;
         }
@@ -110,7 +110,7 @@ void EditorState::moveCursor(Direction direction, int screen_width) {
             moveCursorDown(screen_width);
             return;
         }
-        case Direction::BACKWARD: {
+        case Direction::LEFT: {
             moveCursorLeft();
             return;
         }
@@ -136,10 +136,10 @@ bool EditorState::canCursorMove(Direction direction) const {
         case Direction::DOWN: {
             return (m_cursor.getRow() != m_file.getNumberOfParagrahps() - 1); //TODO cover edge cases if needed
         }
-        case Direction::BACKWARD: {
+        case Direction::LEFT: {
             return (m_cursor.getColumn() != 0 || m_cursor.getRow() != 0);
         }
-        case Direction::FORWARD: {
+        case Direction::RIGHT: {
             return (m_cursor.getRow() != m_file.getNumberOfParagrahps() - 1
                 || static_cast<size_t>(m_cursor.getColumn())
                 < m_file.getParagraph(m_file.getNumberOfParagrahps() - 1).length());

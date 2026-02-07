@@ -2,11 +2,11 @@
 
 Direction getOppositeDirection(Direction direction) {
     switch (direction) {
-        case Direction::FORWARD:
-            return Direction::BACKWARD; 
+        case Direction::RIGHT:
+            return Direction::LEFT; 
 
-        case Direction::BACKWARD:
-            return Direction::FORWARD;
+        case Direction::LEFT:
+            return Direction::RIGHT;
 
         case Direction::UP:
             return Direction::DOWN;

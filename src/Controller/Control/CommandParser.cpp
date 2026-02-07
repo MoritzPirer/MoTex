@@ -3,16 +3,16 @@
 #include "../../../inc/Controller/Control/CommandParser.hpp"
 
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
-#include "../../../inc/Controller/Action/DeleteAction.hpp"
 #include "../../../inc/Controller/Action/SaveAction.hpp"
 #include "../../../inc/Controller/Action/QuitAction.hpp"
 #include "../../../inc/Controller/Action/EraseAction.hpp"
 #include "../../../inc/Controller/Action/ChunkwiseMoveAction.hpp"
 #include "../../../inc/Controller/Action/DirectionalMoveAction.hpp"
 #include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
-#include "../../../inc/Controller/Action/MoveToAction.hpp"
+#include "../../../inc/Controller/Action/FixedPositionMoveAction.hpp"
 #include "../../../inc/Controller/Action/MoveWithinChunkAction.hpp"
 #include "../../../inc/Controller/Action/MessageAction.hpp"
+#include "../../../inc/Controller/Action/DelimiterMoveAction.hpp"
 
 using std::make_shared;
 
@@ -24,7 +24,7 @@ ParseResult CommandParser::generateCharacterwiseMove(ScreenSize text_area_size) 
     Direction direction;
     switch (*m_argument) {
         case 'h': {
-            direction = Direction::BACKWARD;
+            direction = Direction::LEFT;
             break;
         }
         case 'j': {
@@ -36,7 +36,7 @@ ParseResult CommandParser::generateCharacterwiseMove(ScreenSize text_area_size) 
             break;
         }
         case 'l': {
-            direction = Direction::FORWARD;
+            direction = Direction::RIGHT;
             break;
         }
     }
@@ -53,11 +53,21 @@ ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, Mo
                 return {mode, {make_shared<MoveWithinChunkAction>(*m_scope, *m_destination, text_area_size)}};
             case Scope::EXPRESSION:
                 return {mode, {
-                    make_shared<MoveWithinChunkAction>(m_expression_delimiters, *m_destination, text_area_size)}
+                    make_shared<DelimiterMoveAction>(
+                        text_area_size,
+                        m_expression_delimiters,
+                        *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                        EndBehavior::STOP_BEFORE_END
+                    )}
                 };
             case Scope::WORD:
                 return {mode, {
-                    make_shared<MoveWithinChunkAction>(m_word_delimiters, *m_destination, text_area_size)}
+                    make_shared<DelimiterMoveAction>(
+                        text_area_size,
+                        m_word_delimiters,
+                        *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                        EndBehavior::STOP_BEFORE_END
+                    )}
                 };
 
         }
@@ -69,7 +79,7 @@ ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, Mo
 ParseResult CommandParser::generateActions(ScreenSize text_area_size) {
     switch (*m_operator_type) {
         case OperatorType::FILE_ACTION: {
-            return {ModeType::TOOL_MODE, {make_shared<QuitAction>(true)}};
+            return {ModeType::TOOL_MODE, {make_shared<QuitAction>(QuitMode::FORCE_QUIT)}};
         }
         case OperatorType::MOVE_BY_CHARACTER: {
             return generateCharacterwiseMove(text_area_size);

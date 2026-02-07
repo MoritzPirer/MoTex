@@ -59,7 +59,6 @@ void MoveWithinChunkAction::paragraphScopeMove(EditorState& state) {
             return;
         }
     }
-
 }
 
 void MoveWithinChunkAction::lineScopeMove(EditorState& state) {
@@ -78,13 +77,12 @@ void MoveWithinChunkAction::lineScopeMove(EditorState& state) {
             return;
         }
     }
-    
 }
 
 void MoveWithinChunkAction::delimiterMove(EditorState& state) {
 
     //TODO HANDLE END OF EXPRESSION == END OF PARAGRAPH
-    Direction direction = (m_destination == Destination::END? Direction::FORWARD : Direction::BACKWARD);
+    Direction direction = (m_destination == Destination::END? Direction::RIGHT : Direction::LEFT);
     while (state.canCursorMove(direction)) {
         state.moveCursor(direction, m_size.width);
 

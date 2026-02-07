@@ -35,8 +35,7 @@ private:
     void renderAside(const RenderInfo& render_info);
     void renderCursor(const RenderInfo& render_info);
 
-    /// @brief translates special keys (e.g. escape, backspace) to the internal
-    ///     standard defined in Shared/SpecialInputs.hpp. Normal keys are unaffected
+    /// @brief translates special keys (e.g. escape, backspace) to the internal standard
     Input translateInput(int original_input);
 
     Input translateMouseEvent();

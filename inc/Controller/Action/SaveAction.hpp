@@ -10,11 +10,12 @@
 #define SAVE_ACTION_HPP
 
 #include "Action.hpp"
+#include "ActionOptions/SaveConfirmation.hpp"
 
 class SaveAction: public Action {
-    bool m_confirm_save;
+    SaveConfirmation m_confirm_save;
 public:
-    SaveAction(bool confirm_save);
+    SaveAction(SaveConfirmation confirm_save);
     SaveAction(const SaveAction&) = default;
     ~SaveAction() = default;
 

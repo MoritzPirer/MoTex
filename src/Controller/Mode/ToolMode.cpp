@@ -1,14 +1,13 @@
 #include <ncurses.h>
 #include "../../../inc/Controller/Mode/ToolMode.hpp"
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
-#include "../../../inc/Controller/Action/DeleteAction.hpp"
 #include "../../../inc/Controller/Action/SaveAction.hpp"
 #include "../../../inc/Controller/Action/QuitAction.hpp"
 #include "../../../inc/Controller/Action/EraseAction.hpp"
 #include "../../../inc/Controller/Action/ChunkwiseMoveAction.hpp"
 #include "../../../inc/Controller/Action/DirectionalMoveAction.hpp"
 #include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
-#include "../../../inc/Controller/Action/MoveToAction.hpp"
+#include "../../../inc/Controller/Action/FixedPositionMoveAction.hpp"
 
 #include "../../../inc/Controller/Settings/Settings.hpp"
 #include "../../../inc/Shared/SpecialKey.hpp"
@@ -33,14 +32,14 @@ ParseResult ToolMode::parseMouseMovement(Position click_position,
         click_position.column - aside_width
     };
 
-    return {ModeType::TOOL_MODE, {make_shared<MoveToAction>(text_area_size, adjusted_position)}};
+    return {ModeType::TOOL_MODE, {make_shared<FixedPositionMoveAction>(text_area_size, adjusted_position)}};
 }
 
 ParseResult ToolMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_size) {
     switch (key) {
         case SpecialKey::ARROW_LEFT: {
             return {ModeType::TOOL_MODE, {
-                make_shared<CharwiseMoveAction>(text_area_size, Direction::BACKWARD)
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::LEFT)
             }};
         }
         case SpecialKey::ARROW_DOWN: {
@@ -55,7 +54,7 @@ ParseResult ToolMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_size)
         }
         case SpecialKey::ARROW_RIGHT: {
             return {ModeType::TOOL_MODE, {
-                make_shared<CharwiseMoveAction>(text_area_size, Direction::FORWARD)
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT)
             }};
         }
         default:

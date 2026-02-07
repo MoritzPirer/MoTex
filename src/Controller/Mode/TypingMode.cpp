@@ -3,7 +3,7 @@
 #include "../../../inc/Controller/Action/EraseAction.hpp"
 #include "../../../inc/Controller/Action/ParagraphSplittingAction.hpp"
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
-#include "../../../inc/Controller/Action/MoveToAction.hpp"
+#include "../../../inc/Controller/Action/FixedPositionMoveAction.hpp"
 
 #include "../../../inc/Shared/SpecialKey.hpp"
 
@@ -27,13 +27,13 @@ ParseResult TypingMode::parseMouseMovement(Position click_position,
         click_position.column - aside_width
     };
 
-    return {ModeType::TYPING_MODE, {make_shared<MoveToAction>(text_area_size, adjusted_position)}};}
+    return {ModeType::TYPING_MODE, {make_shared<FixedPositionMoveAction>(text_area_size, adjusted_position)}};}
 
 ParseResult TypingMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_size) {
     switch (key) {
         case SpecialKey::ARROW_LEFT: {
             return {ModeType::TOOL_MODE, {
-                make_shared<CharwiseMoveAction>(text_area_size, Direction::BACKWARD)
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::LEFT)
             }};
         }
         case SpecialKey::ARROW_DOWN: {
@@ -48,7 +48,7 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_siz
         }
         case SpecialKey::ARROW_RIGHT: {
             return {ModeType::TOOL_MODE, {
-                make_shared<CharwiseMoveAction>(text_area_size, Direction::FORWARD)
+                make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT)
             }};
         }
         case SpecialKey::ESCAPE: {

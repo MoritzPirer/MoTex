@@ -9,7 +9,7 @@
 #ifndef MESSAGE_ACTION_HPP
 #define MESSAGE_ACTION_HPP
 
-#include "SizeDependantAction.hpp"
+#include "Action.hpp"
 #include "../../Shared/Direction.hpp"
 
 class MessageAction: public Action {
