@@ -164,7 +164,9 @@ void CommandParser::parseAsScopeOrRange(char input) {
         m_scope = scope.at(input);
         m_is_complete = true;
     }
-    
+    else {
+        m_operator_type = std::nullopt;
+    }
 }
 
 ParseResult CommandParser::tryGenerateHint() {
