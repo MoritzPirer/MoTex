@@ -40,7 +40,7 @@ private:
     ParseResult generateActions(ScreenSize text_area_size);
     void parseAsOperator(char input);
 
-    ParseResult parseAsMoveInput(char input, ScreenSize text_area_size);
+    void parseAsArgument(char input);
 
     bool operatorExpectsScopeOrRange();
     void parseAsScopeOrRange(char input);

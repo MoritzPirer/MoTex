@@ -12,7 +12,7 @@
 enum class OperatorType {
     MOVE_BY_CHARACTER,      //_hjkl
     MOVE_WITHIN_CHUNK,      //mM
-    MOVE_OVER_CHUNK,
+    MOVE_OVER_CHUNK,        //gm
     FIND,                   //fF
     FILE_ACTION,            //!
     SWITCH_MODE,            //i

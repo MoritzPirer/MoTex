@@ -44,6 +44,8 @@ ParseResult CommandParser::generateCharacterwiseMove(ScreenSize text_area_size) 
 
 ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, ModeType mode) {
     if (m_scope.has_value()) {
+        ActionDirection direction = (*m_destination == Destination::START)?
+            ActionDirection::BACKWARD : ActionDirection::FORWARD;
         switch (*m_scope) {
             case Scope::FILE:
             case Scope::PARAGRAPH:
@@ -51,7 +53,7 @@ ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, Mo
                 return {mode, {make_shared<ScopeMoveAction>(
                     text_area_size,
                     *m_scope,
-                    *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                    direction,
                     EndBehavior::STOP_BEFORE_END
                 )}};
             case Scope::EXPRESSION:
@@ -59,7 +61,7 @@ ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, Mo
                     make_shared<DelimiterMoveAction>(
                         text_area_size,
                         m_expression_delimiters,
-                        *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                        direction,
                         EndBehavior::STOP_BEFORE_END
                     )}
                 };
@@ -68,7 +70,7 @@ ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, Mo
                     make_shared<DelimiterMoveAction>(
                         text_area_size,
                         m_word_delimiters,
-                        *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                        direction,
                         EndBehavior::STOP_BEFORE_END
                     )}
                 };
@@ -81,6 +83,8 @@ ParseResult CommandParser::generateMoveWithinChunk(ScreenSize text_area_size, Mo
 
 ParseResult CommandParser::generateMoveOverChunk(ScreenSize text_area_size) {
     if (m_scope.has_value()) {
+        ActionDirection direction = (*m_destination == Destination::START)?
+            ActionDirection::BACKWARD : ActionDirection::FORWARD;
         switch (*m_scope) {
             case Scope::FILE:
             case Scope::PARAGRAPH:
@@ -88,7 +92,7 @@ ParseResult CommandParser::generateMoveOverChunk(ScreenSize text_area_size) {
                 return {ModeType::TOOL_MODE, {make_shared<ScopeMoveAction>(
                     text_area_size,
                     *m_scope,
-                    *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                    direction,
                     EndBehavior::STOP_AFTER_END
                 )}};
             case Scope::EXPRESSION:
@@ -96,7 +100,7 @@ ParseResult CommandParser::generateMoveOverChunk(ScreenSize text_area_size) {
                     make_shared<DelimiterMoveAction>(
                         text_area_size,
                         m_expression_delimiters,
-                        *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                        direction,
                         EndBehavior::STOP_AFTER_END
                     )}
                 };
@@ -105,7 +109,7 @@ ParseResult CommandParser::generateMoveOverChunk(ScreenSize text_area_size) {
                     make_shared<DelimiterMoveAction>(
                         text_area_size,
                         m_word_delimiters,
-                        *m_destination == Destination::START? ActionDirection::BACKWARD : ActionDirection::FORWARD,
+                        direction,
                         EndBehavior::STOP_AFTER_END
                     )}
                 };
@@ -191,6 +195,11 @@ void CommandParser::parseAsOperator(char input) {
             m_operator_type = OperatorType::FILE_ACTION;
             m_is_complete = true;
             break;
+        case 'f':
+            m_operator_type = OperatorType::FIND;
+            m_destination = Destination::END;
+            m_is_complete = false;
+            m_next_mode = ModeType::TYPING_MODE;
         
         default: //not a valid operator
             m_operator_type = std::nullopt;
@@ -232,6 +241,10 @@ void CommandParser::parseAsScopeOrRange(char input) {
     }
 }
 
+void CommandParser::parseAsArgument(char input) {
+    m_argument = input;
+}
+
 ParseResult CommandParser::tryGenerateHint() {
     return emptyParse();
 }
@@ -243,6 +256,9 @@ ParseResult CommandParser::parseInput(char input, ScreenSize text_area_size, con
         //parse as second keystroke
         if (operatorExpectsScopeOrRange()) {
             parseAsScopeOrRange(input);
+        }
+        else {
+            parseAsArgument(input);
         }
     }
     else {
