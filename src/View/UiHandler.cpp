@@ -15,30 +15,36 @@ void UiHandler::setStyle(TextRole role) {
     attrset(A_NORMAL);
     
     switch (role) {
-        case TextRole::TEXT_NORMAL: {
-            attron(COLOR_PAIR(1));
-            break;
-        }
-        case TextRole::TEXT_HIGHLIGHT: {
-            attron(COLOR_PAIR(2));
-            break;
-        }
-        case TextRole::FILE_CHANGED: {
-            attron(COLOR_PAIR(3));
-            break;
-        }
-        case TextRole::FILE_NEW: {
-            attron(COLOR_PAIR(4));
-            break;
-        }
-        case TextRole::FILE_SAVED: {
-            attron(COLOR_PAIR(5));
-            break;
-        }
-        case TextRole::UI_ELEMENT: {
-            attron(COLOR_PAIR(6));
-            break;
-        }
+    case TextRole::TEXT_NORMAL: {
+        attron(COLOR_PAIR(1));
+        break;
+    }
+
+    case TextRole::TEXT_HIGHLIGHT: {
+        attron(COLOR_PAIR(2));
+        break;
+    }
+
+    case TextRole::FILE_CHANGED: {
+        attron(COLOR_PAIR(3));
+        break;
+    }
+
+    case TextRole::FILE_NEW: {
+        attron(COLOR_PAIR(4));
+        break;
+    }
+
+    case TextRole::FILE_SAVED: {
+        attron(COLOR_PAIR(5));
+        break;
+    }
+
+    case TextRole::UI_ELEMENT: {
+        attron(COLOR_PAIR(6));
+        break;
+    }
+
     }
 }
 
@@ -155,30 +161,42 @@ Input UiHandler::translateInput(int original_input) {
     }
 
     switch (original_input) {
-        case '\n':
-        case '\r':
-        case KEY_ENTER:
-            return {SpecialKey::ENTER};
-        
-        case 27:
-            return {SpecialKey::ESCAPE};
-        
-        case KEY_BACKSPACE:
-        case 127:
-        case '\b':
-            return {SpecialKey::BACKSPACE};
+    case '\n':
+    case '\r':
+    case KEY_ENTER: {
+        return {SpecialKey::ENTER};
+    }
+    
+    case 27: {
+        return {SpecialKey::ESCAPE};
+    }
+    
+    case KEY_BACKSPACE:
+    case 127:
+    case '\b': {
+        return {SpecialKey::BACKSPACE};
+    }
 
-        case KEY_LEFT:
-            return {SpecialKey::ARROW_LEFT};
-        case KEY_RIGHT:
-            return {SpecialKey::ARROW_RIGHT};
-        case KEY_UP:
-            return {SpecialKey::ARROW_UP};
-        case KEY_DOWN:
-            return {SpecialKey::ARROW_DOWN};
+    case KEY_LEFT: {
+        return {SpecialKey::ARROW_LEFT};
+    }
 
-        default:
-            return {original_input};
+    case KEY_RIGHT: {
+        return {SpecialKey::ARROW_RIGHT};
+    }
+
+    case KEY_UP: {
+        return {SpecialKey::ARROW_UP};
+    }
+
+    case KEY_DOWN: {
+        return {SpecialKey::ARROW_DOWN};
+    }
+
+    default: {
+        return {original_input};
+    }
+
     }
 }
 

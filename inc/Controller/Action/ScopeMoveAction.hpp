@@ -10,9 +10,9 @@
 #define SCOPE_MOVE_ACTION_HPP
 
 #include "Action.hpp"
-#include "ActionOptions/ActionDirection.hpp"
 #include "ActionOptions/EndBehavior.hpp"
 #include "../../Shared/Scope.hpp"
+#include "../../Shared/Direction.hpp"
 
 class ScopeMoveAction: public Action {
 private:

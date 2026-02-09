@@ -22,32 +22,24 @@
 class CommandParser {
 private:
     std::optional<CommandDetails> m_details;
-    bool m_is_complete_command;
 
     std::string m_expression_delimiters = " \t";
     std::string m_word_delimiters = " \t!\"$%&/()=?[]|{}`+*#'-_.:,;<>";
 
     ParseResult emptyParse();
 
-    ParseResult generateMultiCharacterMove(ScreenSize text_area_size, EndBehavior end_behaviour);
     ParseResult generateCharacterwiseMove(ScreenSize text_area_size);
-    ParseResult generateMoveWithinChunk(ScreenSize text_area_size, ModeType mode);
-    ParseResult generateMoveOverChunk(ScreenSize text_area_size);
+    ParseResult generateMultiCharacterMove(ScreenSize text_area_size, EndBehavior end_behaviour);
     
     ParseResult generateActions(ScreenSize text_area_size);
     
     
     void parseAsOperator(char input);
-    void parseAsArgument(char input);
-
-    bool operatorExpectsScopeOrRange();
-    void parseAsScopeOrRange(char input);
-
     void parseAsParameter(char input);
 
     bool isRangeIndicator(char c);
-
     std::optional<Scope> charToScope(char c);
+
     ParseResult tryGenerateHint();
 public:
     CommandParser() = default;

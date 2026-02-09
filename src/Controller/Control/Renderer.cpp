@@ -177,23 +177,26 @@ vector<RenderChunk> Renderer::getSaveIconChunks() {
     TextRole role;    
 
     switch (m_state.getSaveState()) {
-        case SaveState::NEW_FILE: {
-            icon = "[!]";
-            text = "New File";
-            role = TextRole::FILE_NEW;
-            break;
-        };
-        case SaveState::UNSAVED_CHANGES: {
-            icon = "[*]";
-            text = "Unsaved Changes";
-            role = TextRole::FILE_CHANGED;
-            break;
-        };
-        case SaveState::SAVED: {
-            icon = "[=]";
-            text = "Changes Saved";
-            role = TextRole::FILE_SAVED;
-        };
+    case SaveState::NEW_FILE: {
+        icon = "[!]";
+        text = "New File";
+        role = TextRole::FILE_NEW;
+        break;
+    }
+
+    case SaveState::UNSAVED_CHANGES: {
+        icon = "[*]";
+        text = "Unsaved Changes";
+        role = TextRole::FILE_CHANGED;
+        break;
+    }
+
+    case SaveState::SAVED: {
+        icon = "[=]";
+        text = "Changes Saved";
+        role = TextRole::FILE_SAVED;
+    }
+
     }
 
     string message = icon + (show_save_icon && show_save_text? " " : "") + text;

@@ -98,24 +98,30 @@ void EditorState::moveCursorRight() {
 
 void EditorState::moveCursor(Direction direction, int screen_width) {
     switch (direction) {
-        case Direction::UP: {
-            moveCursorUp(screen_width);
-            return;
-        }
-        case Direction::RIGHT: {
-            moveCursorRight();
-            return;
-        }
-        case Direction::DOWN: {
-            moveCursorDown(screen_width);
-            return;
-        }
-        case Direction::LEFT: {
-            moveCursorLeft();
-            return;
-        }
-        default:
-            break;
+    case Direction::UP: {
+        moveCursorUp(screen_width);
+        return;
+    }
+
+    case Direction::RIGHT: {
+        moveCursorRight();
+        return;
+    }
+
+    case Direction::DOWN: {
+        moveCursorDown(screen_width);
+        return;
+    }
+
+    case Direction::LEFT: {
+        moveCursorLeft();
+        return;
+    }
+
+    default: {
+        break;
+    }
+
     }
 }
 
@@ -130,23 +136,28 @@ void EditorState::moveCursorTo(Position position) {
 
 bool EditorState::canCursorMove(Direction direction) const {
     switch (direction) {
-        case Direction::UP: {
-            return (m_cursor.getRow() != 0); //TODO cover edge cases if needed
-        }
-        case Direction::DOWN: {
-            return (m_cursor.getRow() != m_file.getNumberOfParagrahps() - 1); //TODO cover edge cases if needed
-        }
-        case Direction::LEFT: {
-            return (m_cursor.getColumn() != 0 || m_cursor.getRow() != 0);
-        }
-        case Direction::RIGHT: {
-            return (m_cursor.getRow() != m_file.getNumberOfParagrahps() - 1
-                || static_cast<size_t>(m_cursor.getColumn())
-                < m_file.getParagraph(m_file.getNumberOfParagrahps() - 1).length());
-        }
-        
-        default:
-            break;
+    case Direction::UP: {
+        return (m_cursor.getRow() != 0); //TODO cover edge cases if needed
+    }
+
+    case Direction::DOWN: {
+        return (m_cursor.getRow() != m_file.getNumberOfParagrahps() - 1); //TODO cover edge cases if needed
+    }
+
+    case Direction::LEFT: {
+        return (m_cursor.getColumn() != 0 || m_cursor.getRow() != 0);
+    }
+
+    case Direction::RIGHT: {
+        return (m_cursor.getRow() != m_file.getNumberOfParagrahps() - 1
+            || static_cast<size_t>(m_cursor.getColumn())
+            < m_file.getParagraph(m_file.getNumberOfParagrahps() - 1).length());
+    }
+    
+    default: {
+        break;
+    }
+
     }
 }
 

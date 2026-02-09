@@ -20,10 +20,14 @@ ParseResult CommandParser::emptyParse() {
 }
 
 ParseResult CommandParser::generateCharacterwiseMove(ScreenSize text_area_size) {
-    return {ModeType::TOOL_MODE, {make_shared<CharwiseMoveAction>(text_area_size, m_details->direction)}};
+    return {ModeType::TOOL_MODE, {
+        make_shared<CharwiseMoveAction>(text_area_size, m_details->direction)
+    }};
 }
 
-ParseResult CommandParser::generateMultiCharacterMove(ScreenSize text_area_size, EndBehavior end_behavior) {
+ParseResult CommandParser::generateMultiCharacterMove(
+    ScreenSize text_area_size, EndBehavior end_behavior) {
+
     if (!m_details->scope.has_value()) {
         return {m_details->next_mode, {
             make_shared<DelimiterMoveAction>(
@@ -38,14 +42,16 @@ ParseResult CommandParser::generateMultiCharacterMove(ScreenSize text_area_size,
     switch (m_details->scope.value()) {
     case Scope::FILE:
     case Scope::PARAGRAPH:
-    case Scope::LINE:
+    case Scope::LINE: {
         return {m_details->next_mode, {make_shared<ScopeMoveAction>(
             text_area_size,
             m_details->scope.value(),
             m_details->direction,
             end_behavior
         )}};
-    case Scope::EXPRESSION:
+    }
+
+    case Scope::EXPRESSION: {
         return {m_details->next_mode, {
             make_shared<DelimiterMoveAction>(
                 text_area_size,
@@ -54,7 +60,9 @@ ParseResult CommandParser::generateMultiCharacterMove(ScreenSize text_area_size,
                 end_behavior
             )}
         };
-    case Scope::WORD:
+    }
+
+    case Scope::WORD: {
         return {m_details->next_mode, {
             make_shared<DelimiterMoveAction>(
                 text_area_size,
@@ -63,8 +71,12 @@ ParseResult CommandParser::generateMultiCharacterMove(ScreenSize text_area_size,
                 end_behavior
             )}
         };
-    default:
+    }
+
+    default: {
         break;
+    }
+
     }
 }
 
@@ -81,16 +93,23 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size) {
     case Operator::FILE_ACTION: {
         return {ModeType::TOOL_MODE, {make_shared<QuitAction>(QuitMode::FORCE_QUIT)}};
     }
+
     case Operator::MOVE_BY_CHARACTER: {
         return generateCharacterwiseMove(text_area_size);
     }
-    case Operator::MOVE_WITHIN_CHUNK: 
+
+    case Operator::MOVE_WITHIN_CHUNK: {
         return generateMultiCharacterMove(text_area_size, EndBehavior::STOP_BEFORE_END);
+    }
+
     case Operator::MOVE_OVER_CHUNK: {
         return generateMultiCharacterMove(text_area_size, EndBehavior::STOP_AFTER_END);
     }
-    default:
+
+    default: {
         return emptyParse();
+    }
+
     }
 
 }
@@ -266,8 +285,10 @@ void CommandParser::parseAsParameter(char input) {
         break;
     }
     
-    default:
+    default: {
         m_details = std::nullopt;
+    }
+
     }
 }
 
@@ -276,6 +297,8 @@ bool CommandParser::isRangeIndicator(char c) {
 }
 
 std::optional<Scope> CommandParser::charToScope(char c) {
+    c = std::tolower(c);
+
     std::unordered_map<char, Scope> scopes = {
         {'w', Scope::WORD},
         {'e', Scope::EXPRESSION},
@@ -298,12 +321,7 @@ ParseResult CommandParser::tryGenerateHint() {
 ParseResult CommandParser::parseInput(char input, ScreenSize text_area_size, const Settings& settings) {
     (void) settings;
 
-    if (!m_details.has_value()) {
-        parseAsOperator(input);
-    }
-    else {
-        parseAsParameter(input);
-    }
+    m_details.has_value()? parseAsParameter(input) : parseAsOperator(input);
     
     return generateActions(text_area_size);
 }

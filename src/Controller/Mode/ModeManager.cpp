@@ -8,15 +8,20 @@ ModeManager::ModeManager(ModeType initial_mode) {
 
 void ModeManager::changeMode(ModeType new_mode) {
     switch (new_mode) {
-        case ModeType::TOOL_MODE:
-            m_current_mode = std::make_unique<ToolMode>();
-            break;
-        case ModeType::TYPING_MODE:
-            m_current_mode = std::make_unique<TypingMode>();
-            break;
-        
-        default:
-            break;
+    case ModeType::TOOL_MODE: {
+        m_current_mode = std::make_unique<ToolMode>();
+        break;
+    }
+    
+    case ModeType::TYPING_MODE: {
+        m_current_mode = std::make_unique<TypingMode>();
+        break;
+    }
+    
+    default: {
+        break;
+    }
+
     }
 }
 

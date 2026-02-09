@@ -18,14 +18,18 @@ void ScopeMoveAction::fileScopeMove(EditorState& state) {
         state.moveCursorTo({0, 0});
         return;
     }
+
     case Direction::RIGHT: {
         int row = state.getNumberOfParagrahps() - 1;
         int column = state.getParagraph(row).length();
         state.moveCursorTo({row, column});
         return;
     }
-    default:
+
+    default: {
         return;
+    }
+    
     }
 }
 
@@ -60,8 +64,11 @@ void ScopeMoveAction::paragraphScopeMove(EditorState& state) {
         }
         return;
     }
-    default:
+
+    default: {
         return;
+    }
+        
     }
 }
 
@@ -77,6 +84,7 @@ void ScopeMoveAction::lineScopeMove(EditorState& state) {
 
         return;
     }
+
     case Direction::RIGHT: {
         int new_column = state.getCursor().getColumn() / m_size.width * m_size.width + m_size.width - 1;
         new_column = std::min(
@@ -92,20 +100,31 @@ void ScopeMoveAction::lineScopeMove(EditorState& state) {
 
         return;
     }
-    default:
+
+    default: {
         return;
+    }
+
     }
 }
 
 void ScopeMoveAction::applyTo(EditorState& state) {
     switch (m_scope) {
-        case Scope::FILE:
-            return fileScopeMove(state);
-        case Scope::PARAGRAPH:
-            return paragraphScopeMove(state);
-        case Scope::LINE:
-            return lineScopeMove(state);
-        default:
-            throw std::logic_error("Use DelimiterMoveAction for Expression and Word scope!");
+    case Scope::FILE: {
+        return fileScopeMove(state);
+    }
+
+    case Scope::PARAGRAPH: {
+        return paragraphScopeMove(state);
+    }
+
+    case Scope::LINE: {
+        return lineScopeMove(state);
+    }
+
+    default: {
+        throw std::logic_error("Use DelimiterMoveAction for Expression and Word scope!");
+    }
+    
     }
 }
