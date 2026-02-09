@@ -90,6 +90,10 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size) {
     }
 
     switch (m_details->operator_type) {
+    case Operator::SWITCH_MODE: {
+        return {ModeType::TYPING_MODE, {}};
+    }
+
     case Operator::FILE_ACTION: {
         return {ModeType::TOOL_MODE, {make_shared<QuitAction>(QuitMode::FORCE_QUIT)}};
     }
@@ -115,75 +119,6 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size) {
 }
 
 void CommandParser::parseAsOperator(char input) {
-    /*
-    switch (input) {
-        case 'h':
-        case 'j':
-        case 'k':
-        case 'l':
-            m_operator_type = Operator::MOVE_BY_CHARACTER;
-            m_argument = input;
-            m_is_complete = true;
-            m_next_mode = ModeType::TOOL_MODE;
-            break;
-        case 'i':
-            m_operator_type = Operator::SWITCH_MODE;
-            m_is_complete = true;
-            m_next_mode = ModeType::TYPING_MODE;
-            break;
-        case 'm':
-            m_operator_type = Operator::MOVE_WITHIN_CHUNK;
-            m_destination = Destination::END;
-            m_is_complete = false;
-            m_next_mode = ModeType::TOOL_MODE;
-            break;
-        case 'M':
-            m_operator_type = Operator::MOVE_WITHIN_CHUNK;
-            m_destination = Destination::START;
-            m_is_complete = false;
-            m_next_mode = ModeType::TOOL_MODE;
-            break;
-        case 'g':
-            m_operator_type = Operator::MOVE_OVER_CHUNK;
-            m_destination = Destination::END;
-            m_is_complete = false;
-            m_next_mode = ModeType::TOOL_MODE;
-            break;
-        case 'G':
-            m_operator_type = Operator::MOVE_OVER_CHUNK;
-            m_destination = Destination::START;
-            m_is_complete = false;
-            m_next_mode = ModeType::TOOL_MODE;
-            break;
-        case 'a':
-            m_operator_type = Operator::MOVE_WITHIN_CHUNK;
-            m_destination = Destination::END;
-            m_is_complete = false;
-            m_next_mode = ModeType::TYPING_MODE;
-            break;
-        case 'A':
-            m_operator_type = Operator::MOVE_WITHIN_CHUNK;
-            m_destination = Destination::START;
-            m_is_complete = false;
-            m_next_mode = ModeType::TYPING_MODE;
-            break;
-        case 'q':
-            m_operator_type = Operator::FILE_ACTION;
-            m_is_complete = true;
-            break;
-        case 'f':
-            m_operator_type = Operator::FIND;
-            m_destination = Destination::END;
-            m_is_complete = false;
-            m_next_mode = ModeType::TYPING_MODE;
-            break;
-        
-        default: //not a valid operator
-            m_operator_type = std::nullopt;
-            m_is_complete = false;
-    }
-    */
-
     // operators requiring only one input
     std::unordered_map<char, CommandDetails> simple_commands = {
         {'h', {
@@ -206,9 +141,16 @@ void CommandParser::parseAsOperator(char input) {
             .direction = Direction::RIGHT,
             .next_mode = ModeType::TOOL_MODE
         }},
+        {'i', {
+            .operator_type = Operator::SWITCH_MODE,
+            .next_mode = ModeType::TYPING_MODE
+        }},
         {'q', {
             .operator_type = Operator::FILE_ACTION,
         }},
+        {'e', {
+            .operator_type = Operator::ERASE
+        }}
     };
 
     //operators requiring a second input
@@ -275,7 +217,9 @@ void CommandParser::parseAsParameter(char input) {
             m_details->is_complete = true;
         }
         else if (isRangeIndicator(input)) {
-            m_details->argument = input;
+            m_details->argument = m_details->direction == Direction::RIGHT?
+                getClosingRangeIndicator(input) : getOpeningRangeIndicator(input);
+
             m_details->is_complete = true;
         }
         else {
@@ -293,7 +237,38 @@ void CommandParser::parseAsParameter(char input) {
 }
 
 bool CommandParser::isRangeIndicator(char c) {
-    return (std::string("\"<>[](){}'").find(c) != std::string::npos);
+    return (std::string("\"<[({'").find(c) != std::string::npos);
+}
+
+char CommandParser::getOpeningRangeIndicator(char range_indicator) {
+    std::unordered_map<char, char> indicators = {
+        {'}', '{'},
+        {'>', '<'},
+        {']', '['},
+        {')', '('},
+    };
+
+    if (indicators.contains(range_indicator)) {
+        return indicators.at(range_indicator);
+    }
+
+    // already open or symmetrical
+    return range_indicator;
+}
+
+char CommandParser::getClosingRangeIndicator(char range_indicator) {
+    std::unordered_map<char, char> indicators = {
+        {'{', '}'},
+        {'<', '>'},
+        {'[', ']'},
+        {'(', ')'},
+    };
+
+    if (indicators.contains(range_indicator)) {
+        return indicators.at(range_indicator);
+    }
+
+    return range_indicator;
 }
 
 std::optional<Scope> CommandParser::charToScope(char c) {

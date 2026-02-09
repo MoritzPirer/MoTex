@@ -38,6 +38,8 @@ private:
     void parseAsParameter(char input);
 
     bool isRangeIndicator(char c);
+    char getOpeningRangeIndicator(char range_indicator);
+    char getClosingRangeIndicator(char range_indicator);
     std::optional<Scope> charToScope(char c);
 
     ParseResult tryGenerateHint();

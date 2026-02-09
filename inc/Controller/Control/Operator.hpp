@@ -16,7 +16,8 @@ enum class Operator {
     FIND,                   //fF
     FILE_ACTION,            //!
     SWITCH_MODE,            //i
-    CREATE_PARAGRAPH
+    CREATE_PARAGRAPH,
+    ERASE                   //e
 };
 
 #endif //OPERATOR_TYPE_HPP
