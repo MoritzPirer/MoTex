@@ -189,8 +189,8 @@ Position EditorState::skipOffscreenLines(int offscreen_visual_lines, int screen_
     throw std::runtime_error("something went wrong in getFirstVisibleChar()");
 }
 
-void EditorState::insertCharacterAtCursor(char character_to_add) {
-    m_file.insertCharacterAt(character_to_add, m_cursor.getPosition());
+void EditorState::insertCharacterAt(char character_to_add, Position position) {
+    m_file.insertCharacterAt(character_to_add, position);
     m_cursor.moveRight();
 }
 

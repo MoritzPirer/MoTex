@@ -56,7 +56,7 @@ public:
     void moveCursorTo(Position position);
     bool canCursorMove(Direction direction) const;
 
-    void insertCharacterAtCursor(char character_to_add);
+    void insertCharacterAt(char character_to_add, Position position);
 
     inline void debug(std::string line) {m_file.writeToEnd(line); } 
 
@@ -64,7 +64,7 @@ public:
     std::optional<char> readCharacterAtCursor();
 
     /// @brief deletes from start to end, including both end points. if the range is 
-    ///     an empty line, it is remnoved, not just cleared.
+    ///     an empty line, it is removed, not just cleared.
     /// @param start the inclusive start of deletion 
     /// @param end the inclusive end of deletion 
     void deleteRange(Position start, Position end);

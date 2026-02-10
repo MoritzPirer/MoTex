@@ -14,6 +14,8 @@
 #include "../../../inc/Controller/Action/DelimiterMoveAction.hpp"
 #include "../../../inc/Controller/Action/ScopeMoveAction.hpp"
 #include "../../../inc/Controller/Action/InsertAction.hpp"
+#include "../../../inc/Controller/Action/IndentAction.hpp"
+#include "../../../inc/Controller/Action/UnindentAction.hpp"
 
 using std::make_shared;
 
@@ -213,6 +215,18 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Sett
         }};
     }
 
+    case Operator::INDENT: {
+        return {ModeType::TOOL_MODE, {
+            make_shared<IndentAction>(settings.isEnabled("do_skinny_tabs")? 2 : 4)
+        }};
+    }
+
+    case Operator::UNINDENT: {
+        return {ModeType::TOOL_MODE, {
+            make_shared<UnindentAction>(settings.isEnabled("do_skinny_tabs")? 2 : 4)
+        }};
+    }
+
     ///
 
     case Operator::FILE_ACTION: {
@@ -278,6 +292,12 @@ void CommandParser::parseAsOperator(char input) {
         }},
         {'-', {
             .operator_type = Operator::PARAGRAPH_SPLIT
+        }},
+        {'>', {
+            .operator_type = Operator::INDENT,
+        }},
+        {'<', {
+            .operator_type = Operator::UNINDENT,
         }}
     };
 

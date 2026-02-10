@@ -81,6 +81,11 @@ Settings::Settings() {
                 "Use the distance to the cursor as the paragraph number for all paragraphs except the one containing the cursor.",
                 "Only has an effect if 'Display paragraph numbers' is enabled."
             }
+        }},
+        {"do_skinny_tabs", {
+            false,
+            "Reduce tab width",
+            {"Indent and unindent with 2 spaces instead of 4."}
         }}
     };
 }
