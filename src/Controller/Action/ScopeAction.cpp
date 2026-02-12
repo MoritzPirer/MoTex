@@ -86,7 +86,7 @@ Position ScopeAction::endOfScope(const EditorState& state, Scope scope) {
 
         case EndBehavior::STOP_BEFORE_END: {
             int row = state.getCursor().getRow();
-            int column = std::max(static_cast<int>(state.getParagraph(row).length() - 1), 0);
+            int column = state.getParagraph(row).length(); // std::max(static_cast<int>(state.getParagraph(row).length() - 1), 0);
             return {row, column};
         }
         }

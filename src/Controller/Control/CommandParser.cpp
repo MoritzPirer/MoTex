@@ -174,7 +174,7 @@ ParseResult CommandParser::generatParagraphCreationCommand(ScreenSize text_area_
             Scope::PARAGRAPH,
             m_details->direction
         ),
-        make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT),
+        //make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT),
         make_shared<ParagraphSplittingAction>()
     }};
 
