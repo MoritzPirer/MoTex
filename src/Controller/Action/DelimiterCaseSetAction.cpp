@@ -12,8 +12,6 @@ DelimiterCaseSetAction::DelimiterCaseSetAction(
 
 void DelimiterCaseSetAction::applyTo(EditorState& state) {
     Position cursor_position = state.getCursor().getPosition();
-
-    //find ends of range
     Position stop_position = findStopPosition(state); 
 
     int step = m_move_direction == Direction::LEFT? -1 : 1;
@@ -23,11 +21,35 @@ void DelimiterCaseSetAction::applyTo(EditorState& state) {
             continue;
         }
 
-        int start_column = (row == cursor_position.row? cursor_position.column : 0);
-        int end_column = (row == stop_position.row? 
-            stop_position.column : std::max(state.getParagraph(row).length() - 1, 0ul));
-        
-        for (int column = std::min(start_column, end_column); column <= std::max(start_column, end_column); column++) {
+/*
+    if the current row is the row of the cursor, go from the cursor to the end of the line IN THE DIRECTION
+*/
+
+
+        //int start_column = (row == cursor_position.row? cursor_position.column : 0);
+
+        int start_column;
+        if (row == cursor_position.row) {
+            start_column = cursor_position.column;
+        }
+        else {
+            start_column = (m_move_direction == Direction::LEFT? state.getParagraph(row).length() - 1 : 0);
+        }
+
+        int end_column;
+        if (row == stop_position.row) {
+            end_column = stop_position.column;
+        }
+        else {
+            end_column = (m_move_direction == Direction::LEFT? 0 : state.getParagraph(row).length() - 1);
+        }
+
+        for (int column = std::min(start_column, end_column);
+            column <= std::max(start_column, end_column); column++) {
+            if (column >= state.getParagraph(row).length()) {
+                continue;
+            }
+
             setCaseAt(state, {row, column});
         }
     }

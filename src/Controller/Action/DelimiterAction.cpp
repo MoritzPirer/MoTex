@@ -18,14 +18,16 @@ Position DelimiterAction::findStopPosition(EditorState& state) {
     Position original_cursor_position = state.getCursor().getPosition();
 
     bool has_reached_delimiter = false;
-    bool has_reached_non_delimiter = false;
+    
+    std::optional<char> character = state.readCharacterAtCursor();
+    bool has_reached_non_delimiter = (!character.has_value() || m_delimiters.find(*character) == std::string::npos);
 
     while (state.canCursorMove(m_move_direction)) {
         int row_before = state.getCursor().getRow();
         state.moveCursor(m_move_direction, m_size.width);
         int row_after = state.getCursor().getRow();
 
-        std::optional<char> character = state.readCharacterAtCursor();
+        character = state.readCharacterAtCursor();
 
         if (m_paragraph_is_delimiter && row_before != row_after) {
             if (m_end_behavior == EndBehavior::STOP_BEFORE_END) {
