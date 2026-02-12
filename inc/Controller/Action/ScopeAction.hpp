@@ -19,6 +19,12 @@ private:
     ScreenSize m_size;
     EndBehavior m_end_behavior;
 
+    Position startOfParagraph(const EditorState& state);
+    Position startOfLine(const EditorState& state);
+
+    Position endOfParagraph(const EditorState& state);
+    Position endOfLine(const EditorState& state);
+
 protected:
     Position startOfScope(const EditorState& state, Scope scope);
     Position endOfScope(const EditorState& state, Scope scope);
