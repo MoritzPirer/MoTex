@@ -9,7 +9,7 @@ Akin to vim, MoTex uses a TOOL MODE (~vim's normal mode) that provides the comma
 Transioning from TYPING to TOOL mode is done with the escape key. Entering typing mode can be done in multiple ways, as described below
 
 ## Command system:
-(this command system is only planned, not yet implemented)
+Note that some of these commands are not yet implemented.
 
 ### Definitions:
 
@@ -85,9 +85,10 @@ Note that you can also use the arrow keys (also in Typing mode)
 - C + argument = delete from the cursor to the next occurrence of argument and enter typing mode
 - Y + argument = copy from the cursor to the next occurrence of argument to an internal clipboard
 
-#### r & x: REPLACE and ERASE
+#### r, e & E: REPLACE and ERASE
 - r + argument = replace the character under the cursor with argument
 - e = delete the character under the cursor
+- E = delete the character under the cursor and enter typing mode
 
 #### p & P: PASTE
 - p = paste the contents of the internal clipboard after the cursor
