@@ -17,6 +17,7 @@
 #include "../../../inc/Controller/Action/IndentAction.hpp"
 #include "../../../inc/Controller/Action/UnindentAction.hpp"
 #include "../../../inc/Controller/Action/DelimiterCaseSetAction.hpp"
+#include "../../../inc/Controller/Action/ScopeCaseSetAction.hpp"
 
 using std::make_shared;
 
@@ -52,9 +53,9 @@ ParseResult CommandParser::generateMultiCharacterMove(
     case Scope::LINE: {
         return {m_details->next_mode, {make_shared<ScopeMoveAction>(
             text_area_size,
+            end_behavior,
             m_details->scope.value(),
-            m_details->direction,
-            end_behavior
+            m_details->direction
         )}};
     }
 
@@ -91,20 +92,61 @@ ParseResult CommandParser::generateMultiCharacterMove(
 
 ParseResult CommandParser::generateCaseSetCommand(ScreenSize text_area_size, Case target_case) {
     // range given
-    return {std::nullopt, {
-        make_shared<DelimiterCaseSetAction>(
-            text_area_size,
-            std::string(1, getOpeningRangeIndicator(*(m_details->argument))),
-            Direction::LEFT,
-            target_case
-        ),
-        make_shared<DelimiterCaseSetAction>(
-            text_area_size,
-            std::string(1, getClosingRangeIndicator(*(m_details->argument))),
-            Direction::RIGHT,
-            target_case
-        )
-    }};
+    if (!m_details->scope.has_value()) {
+        return {std::nullopt, {
+            make_shared<DelimiterCaseSetAction>(
+                text_area_size,
+                std::string(1, getOpeningRangeIndicator(*(m_details->argument))),
+                Direction::LEFT,
+                false,
+                target_case
+            ),
+            make_shared<DelimiterCaseSetAction>(
+                text_area_size,
+                std::string(1, getClosingRangeIndicator(*(m_details->argument))),
+                Direction::RIGHT,
+                false,
+                target_case
+            )
+        }};
+    }
+
+    switch (*(m_details->scope)) {
+    case Scope::FILE: 
+    case Scope::PARAGRAPH:
+    case Scope::LINE: {
+        return {std::nullopt, {
+            make_shared<ScopeCaseSetAction>(
+                text_area_size,
+                *(m_details->scope),
+                target_case
+            )
+        }};
+    }
+    case Scope::EXPRESSION:
+    case Scope::WORD: {
+        std::string delimiters =
+            (*(m_details->scope) == Scope::EXPRESSION? m_expression_delimiters : m_word_delimiters);
+
+        return {std::nullopt, {
+            make_shared<DelimiterCaseSetAction>(
+                text_area_size,
+                delimiters,
+                Direction::LEFT,
+                true,
+                target_case
+            ),
+            make_shared<DelimiterCaseSetAction>(
+                text_area_size,
+                delimiters,
+                Direction::RIGHT,
+                true,
+                target_case
+            )
+        }};
+    }
+
+    }
 }
 
 ParseResult CommandParser::generateFileCommand(const Settings& settings) {
@@ -136,9 +178,9 @@ ParseResult CommandParser::generatParagraphCreationCommand(ScreenSize text_area_
     ParseResult result = {m_details->next_mode, {
         make_shared<ScopeMoveAction>(
             text_area_size,
+            EndBehavior::STOP_BEFORE_END,
             Scope::PARAGRAPH,
-            m_details->direction,
-            EndBehavior::STOP_BEFORE_END
+            m_details->direction
         ),
         make_shared<ParagraphSplittingAction>()
     }};
@@ -216,9 +258,9 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Sett
         return {ModeType::TOOL_MODE, {
             make_shared<ScopeMoveAction>(
                 text_area_size,
+                EndBehavior::STOP_BEFORE_END,
                 Scope::PARAGRAPH,
-                Direction::RIGHT,
-                EndBehavior::STOP_BEFORE_END
+                Direction::RIGHT
             ),
             make_shared<ParagraphJoiningAction>()
         }};

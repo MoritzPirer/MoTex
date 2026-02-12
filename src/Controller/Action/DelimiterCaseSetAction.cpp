@@ -4,9 +4,10 @@ DelimiterCaseSetAction::DelimiterCaseSetAction(
     ScreenSize size,
     std::string delimiters,
     Direction direction,
+    bool paragraph_is_delimiter,
     Case target_case
 ):
-    DelimiterAction{size, delimiters, direction, EndBehavior::STOP_BEFORE_END, false},
+    DelimiterAction{size, delimiters, direction, EndBehavior::STOP_BEFORE_END, paragraph_is_delimiter},
     m_target_case{target_case}
     {}
 
@@ -20,13 +21,6 @@ void DelimiterCaseSetAction::applyTo(EditorState& state) {
         if (state.getParagraph(row).length() == 0) {
             continue;
         }
-
-/*
-    if the current row is the row of the cursor, go from the cursor to the end of the line IN THE DIRECTION
-*/
-
-
-        //int start_column = (row == cursor_position.row? cursor_position.column : 0);
 
         int start_column;
         if (row == cursor_position.row) {
@@ -46,7 +40,8 @@ void DelimiterCaseSetAction::applyTo(EditorState& state) {
 
         for (int column = std::min(start_column, end_column);
             column <= std::max(start_column, end_column); column++) {
-            if (column >= state.getParagraph(row).length()) {
+            //protect from overhang cursor position
+            if (static_cast<size_t>(column) >= state.getParagraph(row).length()) {
                 continue;
             }
 

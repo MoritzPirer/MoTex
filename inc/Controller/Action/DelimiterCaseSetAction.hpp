@@ -22,6 +22,7 @@ public:
         ScreenSize size,
         std::string delimiters,
         Direction direction,
+        bool paragraph_is_delimiter,
         Case target_case
     );
     DelimiterCaseSetAction(const DelimiterCaseSetAction&) = default;

@@ -9,27 +9,22 @@
 #ifndef SCOPE_MOVE_ACTION_HPP
 #define SCOPE_MOVE_ACTION_HPP
 
-#include "Action.hpp"
+#include "ScopeAction.hpp"
 #include "ActionOptions/EndBehavior.hpp"
 #include "../../Shared/Scope.hpp"
 #include "../../Shared/Direction.hpp"
 
-class ScopeMoveAction: public Action {
+class ScopeMoveAction: public ScopeAction {
 private:
-    ScreenSize m_size;
     Scope m_scope;
     Direction m_move_direction;
-    EndBehavior m_end_behavior;
 
-    void fileScopeMove(EditorState& state);
-    void paragraphScopeMove(EditorState& state);
-    void lineScopeMove(EditorState& state);
 public:
     ScopeMoveAction(
         ScreenSize size,
+        EndBehavior end_behavior,
         Scope scope,
-        Direction move_direction,
-        EndBehavior end_behavior
+        Direction move_direction
     );
     ScopeMoveAction(const ScopeMoveAction&) = default;
     ~ScopeMoveAction() = default;
