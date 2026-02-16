@@ -59,11 +59,12 @@ void EditorController::mainLoop() {
             input,
             total_size,
             calculateTextAreaSize(render_info, total_size),
-            m_settings
+            m_settings,
+            m_state.getCursor().getPosition()
         );
 
         for (std::shared_ptr action : actions) {
-            action->applyTo(m_state);
+            action->apply(m_state);
         } 
     }
 }

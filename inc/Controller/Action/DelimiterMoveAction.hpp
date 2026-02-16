@@ -23,7 +23,7 @@ public:
     DelimiterMoveAction(const DelimiterMoveAction&) = default;
     ~DelimiterMoveAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //DELIMITER_MOVE_ACTION_HPP

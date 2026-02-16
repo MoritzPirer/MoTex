@@ -21,7 +21,7 @@ public:
     FixedPositionMoveAction(const FixedPositionMoveAction&) = default;
     ~FixedPositionMoveAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //FIXED_POSITION_MOVE_ACTION

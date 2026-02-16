@@ -79,6 +79,25 @@ void TextFile::insertCharacterAt(char character_to_add, Position position) {
     calculateMetadata();
 }
 
+void TextFile::insertLines(std::vector<std::string> content, Position start) {
+    if (content.empty()) {
+        return;
+    }
+
+    std::string& first_line = m_file_content.at(start.row);
+    std::string rest_of_line = first_line.substr(start.column);
+    first_line.erase(start.column);
+
+    m_file_content.at(start.row).append(content.at(0));
+
+    m_file_content.insert(m_file_content.begin() + start.row + 1, content.begin() + 1, content.end());
+    m_file_content.at(start.row + content.size() - 1).append(rest_of_line);
+
+    
+    markAsChanged();
+    calculateMetadata();
+}
+
 void TextFile::setCharacterAt(char character_to_set, Position position) {
     if (!isValidTextPosition(position)) {
         throw std::invalid_argument("Set attempted at invalid position " + position.format() + "!");

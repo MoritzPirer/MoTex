@@ -10,6 +10,6 @@ DelimiterMoveAction::DelimiterMoveAction(
     DelimiterAction{delimiters, anti_delimiters, move_direction, end_behavior, paragraph_is_delimiter}
     {}
 
-void DelimiterMoveAction::applyTo(EditorState& state) {
+void DelimiterMoveAction::apply(EditorState& state) {
     state.moveCursorTo(findStopPosition(state));
 }

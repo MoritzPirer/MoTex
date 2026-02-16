@@ -41,7 +41,7 @@ public:
     DelimiterAction(const DelimiterAction&) = default;
     ~DelimiterAction() = default;
 
-    void applyTo(EditorState& state) override = 0;
+    void apply(EditorState& state) override = 0;
 };
 
 

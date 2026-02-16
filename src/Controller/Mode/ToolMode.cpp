@@ -81,7 +81,7 @@ ParseResult ToolMode::parseStandardInput(int input, ScreenSize text_area_size, c
 }
 
 ParseResult ToolMode::parseInput(
-    Input input, ScreenSize actual_size, ScreenSize text_area_size, const Settings& settings) {
+    Input input, ScreenSize actual_size, ScreenSize text_area_size, const Settings& settings, Position cursor) {
     
     if (input.mouse_position.has_value()) {
         return parseMouseMovement(*input.mouse_position, actual_size, text_area_size);

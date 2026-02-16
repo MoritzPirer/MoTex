@@ -200,6 +200,9 @@ Input UiHandler::translateInput(int original_input) {
     case KEY_BTAB: {
         return {SpecialKey::SHIFT_TAB};
     }
+    case KEY_RESIZE: {
+        return {};
+    }
 
     default: {
         return {static_cast<char>(original_input)};

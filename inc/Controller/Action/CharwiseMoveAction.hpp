@@ -21,7 +21,7 @@ public:
     CharwiseMoveAction(const CharwiseMoveAction&) = default;
     ~CharwiseMoveAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //CHARACTERWISE_MOVE_ACTION_HPP

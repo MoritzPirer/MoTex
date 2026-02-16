@@ -37,7 +37,7 @@ public:
     ScopeAction(const ScopeAction&) = default;
     ~ScopeAction() = default;
 
-    void applyTo(EditorState& state) override = 0;
+    void apply(EditorState& state) override = 0;
 };
 
 #endif //SCOPE_ACTION_HPP

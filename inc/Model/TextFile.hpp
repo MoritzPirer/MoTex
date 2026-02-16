@@ -52,6 +52,9 @@ public:
     void writeToEnd(const std::string& line);
 
     void insertCharacterAt(char character_to_add, Position position);
+
+    void insertLines(std::vector<std::string> content, Position start);
+
     void setCharacterAt(char character_to_set, Position position);
     
     void deleteRange(Position start, Position end);

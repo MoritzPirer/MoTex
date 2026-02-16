@@ -9,17 +9,22 @@
 #ifndef INSERT_ACTION_HPP
 #define INSERT_ACTION_HPP
 
+#include <vector>
+
 #include "Action.hpp"
 
 class InsertAction: public Action {
 private:
-    char m_character_to_add;
+    std::vector<std::string> m_content;
+    Position m_start;
 public:
-    InsertAction(char character_to_add);
+    InsertAction(std::vector<std::string> content, Position start);
     InsertAction(const InsertAction&) = default;
     ~InsertAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
+
+    void undo(EditorState& state) override;
 };
 
 #endif //INSERT_ACTION_HPP

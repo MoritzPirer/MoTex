@@ -4,7 +4,7 @@ UnindentAction::UnindentAction(int indent_width):
     m_indent_width{indent_width}
     {}
 
-void UnindentAction::applyTo(EditorState& state) {
+void UnindentAction::apply(EditorState& state) {
     Position erase_position = {
         state.getCursor().getRow(),
         0

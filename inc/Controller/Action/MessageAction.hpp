@@ -20,7 +20,7 @@ public:
     MessageAction(const MessageAction&) = default;
     ~MessageAction() = default;
 
-    void applyTo(EditorState& state) override { state.addTemporaryMessage(m_message);}
+    void apply(EditorState& state) override { state.addTemporaryMessage(m_message);}
 };
 
 #endif //MESSAGE_ACTION_HPP

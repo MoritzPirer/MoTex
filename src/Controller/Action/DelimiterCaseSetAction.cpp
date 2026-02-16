@@ -37,7 +37,7 @@ int DelimiterCaseSetAction::getEndColumn(const EditorState& state, int row, Posi
     return state.getParagraph(row).length() - 1;
 }
 
-void DelimiterCaseSetAction::applyTo(EditorState& state) {
+void DelimiterCaseSetAction::apply(EditorState& state) {
     Position stop_position = findStopPosition(state); 
 
     int step = m_move_direction == Direction::LEFT? -1 : 1;

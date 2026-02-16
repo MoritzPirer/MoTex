@@ -22,7 +22,7 @@ public:
     EraseAction(const EraseAction&) = default;
     ~EraseAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //ERASE_ACTION_HPP

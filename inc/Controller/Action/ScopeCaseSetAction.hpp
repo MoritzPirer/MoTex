@@ -29,7 +29,7 @@ public:
     ScopeCaseSetAction(const ScopeCaseSetAction&) = default;
     ~ScopeCaseSetAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //SCOPE_CASE_SET_ACTION_HPP

@@ -2,6 +2,8 @@
 
 #include <ncurses.h>
 
+using std::string;
+
 bool EditorState::isCursorInLastRowOfParagraph(int screen_width) {
     int line_length = m_file.getParagraphLength(m_cursor.getRow());
     
@@ -214,6 +216,10 @@ void EditorState::insertCharacterAt(char character_to_add, Position position) {
     m_cursor.moveRight();
 }
 
+void EditorState::insertLines(std::vector<string> content, Position start) {
+    m_file.insertLines(content, start);
+}
+
 std::optional<char> EditorState::readCharacterAt(Position position) {
     if (m_file.getNumberOfParagrahps() <= position.row
         || m_file.getParagraph(position.row).length() <= static_cast<size_t>(position.column)) {
@@ -259,11 +265,11 @@ Position EditorState::getFirstVisibleChar(ScreenSize text_area_size) const {
     return skipOffscreenLines(offscreen_visual_lines, text_area_size.width);
 }
 
-void EditorState::addTemporaryMessage(std::string message) {
+void EditorState::addTemporaryMessage(string message) {
     m_temporary_messages.push_back(message);
 }
 
-const std::vector<std::string>& EditorState::getTemporaryMessages() const {
+const std::vector<string>& EditorState::getTemporaryMessages() const {
     return m_temporary_messages;
 }
 

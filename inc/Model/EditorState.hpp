@@ -60,6 +60,7 @@ public:
     bool canCursorMove(Direction direction) const;
 
     void insertCharacterAt(char character_to_add, Position position);
+    void insertLines(std::vector<std::string> content, Position start);
 
     inline void debug(std::string line) {m_file.writeToEnd(line); } 
 

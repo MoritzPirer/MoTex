@@ -11,7 +11,7 @@ ScopeMoveAction::ScopeMoveAction(
     m_move_direction{move_direction}
     {}
 
-void ScopeMoveAction::applyTo(EditorState& state) {
+void ScopeMoveAction::apply(EditorState& state) {
     switch (m_move_direction) {
     case Direction::LEFT: {
         state.moveCursorTo(startOfScope(state, m_scope));

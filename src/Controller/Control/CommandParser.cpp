@@ -279,7 +279,7 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Sett
     case Operator::REPLACE: {
         return {ModeType::TOOL_MODE, {
             make_shared<EraseAction>(0, false),
-            make_shared<InsertAction>(*(m_details->argument)),
+            //make_shared<InsertAction>(*(m_details->argument)),
             make_shared<CharwiseMoveAction>(text_area_size, Direction::LEFT)
         }};
     }

@@ -4,7 +4,7 @@ IndentAction::IndentAction(int indent_width):
     m_indent_width{indent_width}
     {}
 
-void IndentAction::applyTo(EditorState& state) {
+void IndentAction::apply(EditorState& state) {
     Position insertion_position = {
         state.getCursor().getRow(),
         0

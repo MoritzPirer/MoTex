@@ -29,7 +29,7 @@ public:
     ScopeMoveAction(const ScopeMoveAction&) = default;
     ~ScopeMoveAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //SCOPE_MOVE_ACTION_HPP

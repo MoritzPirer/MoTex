@@ -91,7 +91,7 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key,
 }
 
 ParseResult TypingMode::parseInput(
-    Input input, ScreenSize actual_size, ScreenSize text_area_size, const Settings& settings) {
+    Input input, ScreenSize actual_size, ScreenSize text_area_size, const Settings& settings, Position cursor) {
 
     (void) settings;
        
@@ -104,7 +104,11 @@ ParseResult TypingMode::parseInput(
     }
 
     if (input.standard_input.has_value()) {
-        return {ModeType::TYPING_MODE, {std::make_shared<InsertAction>(*input.standard_input)}};
+        std::vector<std::string> content = {std::string(1, *input.standard_input)};
+        return {ModeType::TYPING_MODE, {
+            std::make_shared<InsertAction>(content, cursor),
+            // std::make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT)
+        }};
     } 
     
     return {ModeType::TYPING_MODE, {}};

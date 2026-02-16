@@ -10,7 +10,7 @@ ScopeCaseSetAction::ScopeCaseSetAction(
     m_target_case{target_case}
     {}
 
-void ScopeCaseSetAction::applyTo(EditorState& state) {
+void ScopeCaseSetAction::apply(EditorState& state) {
     Position start_of_scope = startOfScope(state, m_scope);
     Position end_of_scope = endOfScope(state, m_scope);
 

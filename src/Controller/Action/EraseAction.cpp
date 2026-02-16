@@ -29,7 +29,7 @@ std::optional<Position> EraseAction::findErasePosition(const EditorState& state)
     }
 }
 
-void EraseAction::applyTo(EditorState& state) {
+void EraseAction::apply(EditorState& state) {
     /*
     NOTE:
     if erasing a single char further away from the cursor or to the right of the cursor is needed

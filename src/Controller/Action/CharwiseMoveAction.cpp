@@ -4,7 +4,7 @@ CharwiseMoveAction::CharwiseMoveAction(ScreenSize size, Direction direction):
     m_size{size},
     m_direction{direction} {}
 
-void CharwiseMoveAction::applyTo(EditorState& state) {
+void CharwiseMoveAction::apply(EditorState& state) {
     switch (m_direction) {
     case Direction::RIGHT: {
         state.moveCursorRight();

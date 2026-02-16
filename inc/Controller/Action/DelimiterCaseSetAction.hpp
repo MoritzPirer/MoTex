@@ -30,7 +30,7 @@ public:
     DelimiterCaseSetAction(const DelimiterCaseSetAction&) = default;
     ~DelimiterCaseSetAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //DELIMITER_CASE_SET_ACTION_HPP

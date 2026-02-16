@@ -4,7 +4,7 @@
 SaveAction::SaveAction(SaveConfirmation confirm_save):
     m_confirm_save{confirm_save} {}
 
-void SaveAction::applyTo(EditorState& state) {
+void SaveAction::apply(EditorState& state) {
     //TODO check if save succeeded (via exception? and give message if it failed)
     FileHandler::saveFile(state.getFile());
 

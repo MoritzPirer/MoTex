@@ -19,7 +19,7 @@ public:
     SaveAction(const SaveAction&) = default;
     ~SaveAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //SAVE_ACTION_HPP

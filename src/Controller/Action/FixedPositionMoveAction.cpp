@@ -4,7 +4,7 @@ FixedPositionMoveAction::FixedPositionMoveAction(ScreenSize text_area_size, Posi
     m_text_area_size{text_area_size},
     m_target_position{target_position} {}
 
-void FixedPositionMoveAction::applyTo(EditorState& state) {
+void FixedPositionMoveAction::apply(EditorState& state) {
     //TODO: Most of this logic is for converting mouse click position to logical position
     // extract that and move it to a different spot
     Position first_visible = state.getFirstVisibleChar(m_text_area_size);

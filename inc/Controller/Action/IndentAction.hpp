@@ -21,7 +21,7 @@ public:
     IndentAction(const IndentAction&) = default;
     ~IndentAction() = default;
 
-    void applyTo(EditorState& state) override;
+    void apply(EditorState& state) override;
 };
 
 #endif //INDENT_ACTION_HPP

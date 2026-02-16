@@ -18,7 +18,9 @@ public:
     Action(const Action&) = default;
     virtual ~Action() = default;
 
-    virtual void applyTo(EditorState& state) = 0;
+    virtual void apply(EditorState& state) = 0;
+
+    virtual void undo(EditorState& state) { (void) state; }; // temporary; will be replaced by pure virtual
 };
 
 #endif //ACTION_HPP
