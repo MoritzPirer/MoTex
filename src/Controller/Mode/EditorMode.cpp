@@ -35,6 +35,6 @@ ParseResult EditorMode::parseMouseMovement(Position click_position,
         click_position.column - aside_width
     };
 
-    return {ModeType::TYPING_MODE,
+    return {std::nullopt,
         std::make_shared<FixedPositionMoveAction>(text_area_size, adjusted_position)};
 }

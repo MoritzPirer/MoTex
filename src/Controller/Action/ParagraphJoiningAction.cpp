@@ -1,10 +1,28 @@
 #include "../../../inc/Controller/Action/ParagraphJoiningAction.hpp"
 #include "../../../inc/Controller/Control/ExecutionContext.hpp"
 
-void ParagraphJoiningAction::apply(ExecutionContext& context) {
-    int row = context.state.getCursor().getRow();
+ParagraphJoiningAction::ParagraphJoiningAction(Position joining_position):
+    m_joining_position{joining_position},
+    m_first_of_joinee{std::nullopt}
+    {}
 
-    if (static_cast<size_t>(row) < context.state.getNumberOfParagrahps() - 1) {
-        context.state.joinLineToPrevious(row + 1);
+void ParagraphJoiningAction::apply(ExecutionContext& context) {
+    EditorState& state = context.state;
+    int row = m_joining_position.row;
+
+    if (static_cast<size_t>(row) < state.getNumberOfParagrahps() - 1) {
+        m_first_of_joinee = {row, static_cast<int>(state.getParagraph(row).length())};
+        state.joinNextParagraphTo(row);
     }
+
+}
+
+void ParagraphJoiningAction::undo(EditorState& state) {
+    if (m_first_of_joinee.has_value()) {
+        state.splitAt(*m_first_of_joinee);
+    }
+}
+
+bool ParagraphJoiningAction::canBeUndone() const {
+    return true;
 }

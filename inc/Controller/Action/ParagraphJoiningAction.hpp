@@ -12,12 +12,20 @@
 #include "Action.hpp"
 
 class ParagraphJoiningAction: public Action {
+private:
+    Position m_joining_position;
+    std::optional<Position> m_first_of_joinee;
+
 public:
-    ParagraphJoiningAction() = default;
+    ParagraphJoiningAction(Position joining_position);
     ParagraphJoiningAction(const ParagraphJoiningAction &) = default;
     ~ParagraphJoiningAction() = default;
 
     void apply(ExecutionContext& context) override;
+
+    void undo(EditorState& state) override;
+
+    bool canBeUndone() const override;
 };
 
 #endif //PARAGRAPH_JOINING_ACTION_HPP

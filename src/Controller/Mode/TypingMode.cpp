@@ -39,7 +39,7 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key,
     }
 
     case SpecialKey::ENTER: {
-        return {ModeType::TYPING_MODE, {std::make_shared<ParagraphSplittingAction>()}};
+        return {ModeType::TYPING_MODE, {std::make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition())}};
     }
 
     case SpecialKey::ARROW_LEFT: {

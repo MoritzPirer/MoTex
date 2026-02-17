@@ -68,6 +68,8 @@ public:
     /// @brief joins the paragraph with the given index to the previous paragraph
     /// @param paragraph_index index of the paragraph to join to the previous 
     void joinToPrevious(int paragraph_index);
+
+    void joinNextParagraphTo(int paragraph_index);
     
     int getNumberOfParagrahps() const;
     int getNumberOfWords() const;

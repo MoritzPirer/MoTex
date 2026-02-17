@@ -247,8 +247,16 @@ void EditorState::splitAtCursor() {
     moveCursorRight();
 }
 
+void EditorState::splitAt(Position position) {
+    m_file.splitAt(position);
+}
+
 void EditorState::joinLineToPrevious(int line) {
     m_file.joinToPrevious(line);
+}
+
+void EditorState::joinNextParagraphTo(int paragraph_index) {
+    m_file.joinNextParagraphTo(paragraph_index);
 }
 
 Position EditorState::getFirstVisibleChar(ScreenSize text_area_size) const {

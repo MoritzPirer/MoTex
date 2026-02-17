@@ -62,8 +62,6 @@ public:
     void insertCharacterAt(char character_to_add, Position position);
     void insertLines(std::vector<std::string> content, Position start);
 
-    inline void debug(std::string line) {m_file.writeToEnd(line); } 
-
     std::optional<char> readCharacterAt(Position position);
     std::optional<char> readCharacterAtCursor();
     void setCharacterAt(char character_to_set, Position position);
@@ -78,9 +76,13 @@ public:
     ///     being the first character in the new line
     void splitAtCursor();
 
+    void splitAt(Position position);
+
     /// @brief joins the given line to the end of previous line
     /// @param line the index of the line to join to the previous 
     void joinLineToPrevious(int line);
+
+    void joinNextParagraphTo(int paragraph_index);
 
     Position getFirstVisibleChar(ScreenSize size) const;
     
@@ -100,7 +102,6 @@ public:
     void clearTemporaryMessages();
 
     std::vector<std::string> copyRange(Position start, Position end);
-    std::vector<std::string> deleteLines(Position start, Position end);
 };
 
 #endif //EDITOR_STATE_HPP

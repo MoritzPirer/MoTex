@@ -61,7 +61,7 @@ Position findStopPosition(EditorState& state, RangeSettings settings, Direction 
                 break;
             }
             
-            if (!settings.anti_delimiters.has_value()) {
+            if (settings.anti_delimiters.has_value()) {
                 delimiter_balance--;
             }
         }

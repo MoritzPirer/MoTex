@@ -185,6 +185,14 @@ void TextFile::joinToPrevious(int paragraph_index) {
     markAsChanged();
 }
 
+void TextFile::joinNextParagraphTo(int paragraph_index) {
+    if (paragraph_index < 0 || static_cast<size_t>(paragraph_index) >= m_file_content.size() - 1) {
+        return;
+    }
+
+    m_file_content.at(paragraph_index).append(m_file_content.at(paragraph_index + 1));
+    m_file_content.erase(m_file_content.begin() + paragraph_index + 1);
+}
 
 int TextFile::getNumberOfParagrahps() const {
     return m_file_content.size();

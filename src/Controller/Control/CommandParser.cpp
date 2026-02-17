@@ -278,12 +278,12 @@ ParseResult CommandParser::generateActions(ParsingContext context) {
         });
         return {ModeType::TOOL_MODE, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
             make_shared<SectionMoveAction>(start, end, Direction::RIGHT),
-            make_shared<ParagraphJoiningAction>()
+            make_shared<ParagraphJoiningAction>(context.state.getCursor().getPosition())
         })};
     }
 
     case Operator::PARAGRAPH_SPLIT: {
-        return {ModeType::TOOL_MODE, make_shared<ParagraphSplittingAction>()};
+        return {ModeType::TOOL_MODE, std::make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition())};
     }
 
     case Operator::REPLACE: {
@@ -504,14 +504,14 @@ ParseResult CommandParser::generatParagraphCreationCommand(ParsingContext contex
     if (m_details->direction == Direction::LEFT) {
         return {m_details->next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
             make_shared<SectionMoveAction>(start, end, m_details->direction),
-            make_shared<ParagraphSplittingAction>(),
+            make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition()),
             make_shared<CharwiseMoveAction>(context.text_area_size, Direction::UP)
         })};
     }
 
     return {m_details->next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
         make_shared<SectionMoveAction>(start, end, m_details->direction),
-        make_shared<ParagraphSplittingAction>()
+        make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition()),
     })};
 
 }

@@ -12,12 +12,18 @@
 #include "Action.hpp"
 
 class ParagraphSplittingAction: public Action {
+private:
+    Position m_first_after_split;
 public:
-    ParagraphSplittingAction() = default;
+    ParagraphSplittingAction(Position first_after_split);
     ParagraphSplittingAction(const ParagraphSplittingAction &) = default;
     ~ParagraphSplittingAction() = default;
 
     void apply(ExecutionContext& context) override;
+
+    void undo(EditorState& state) override;
+
+    bool canBeUndone() const override;;
 };
 
 #endif //PARAGRAPH_SPLITTING_ACTION_HPP
