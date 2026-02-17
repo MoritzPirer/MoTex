@@ -17,6 +17,7 @@
 #include "../../Shared/ParseResult.hpp"
 #include "../Settings/Settings.hpp"
 #include "../../Shared/Input.hpp"
+#include "../Control/ParsingContext.hpp"
 
 class EditorMode {
 public:
@@ -24,13 +25,7 @@ public:
     EditorMode(const EditorMode&) = default;
     virtual ~EditorMode() = default;
 
-    /// @brief parses the input and converts it into an editor mode and zero or more Actions
-    /// @param input the input to process 
-    /// @param size the current size of the screen area
-    /// @return the mode the editor should transition to (may be the same as currently), one or more
-    ///     actions to apply to the editor state (which may be empty if nothing should be done) 
-    virtual ParseResult parseInput(Input input, ScreenSize screen_size,
-        ScreenSize text_area_size, const Settings& settings, const EditorState& state) = 0;
+    virtual ParseResult parseInput(Input input, ParsingContext context) = 0;
 
     /// @brief returns the name of the mode for displaying
     virtual std::string getModeLabel() const = 0;

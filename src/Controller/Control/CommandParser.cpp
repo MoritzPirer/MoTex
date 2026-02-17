@@ -5,8 +5,8 @@
 
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
 #include "../../../inc/Controller/Action/FixedPositionMoveAction.hpp"
-#include "../../../inc/Controller/Action/DelimiterMoveAction.hpp"
-#include "../../../inc/Controller/Action/ScopeMoveAction.hpp"
+#include "../../../inc/Controller/Control/SectionResolver.hpp"
+#include "../../../inc/Controller/Action/SectionMoveAction.hpp"
 
 #include "../../../inc/Controller/Action/SaveAction.hpp"
 #include "../../../inc/Controller/Action/QuitAction.hpp"
@@ -25,13 +25,14 @@
 
 #include "../../../inc/Controller/Action/MessageAction.hpp"
 #include "../../../inc/Controller/Action/UndoAction.hpp"
+#include "../../../inc/Controller/Control/ParsingContext.hpp"
 
 using std::make_shared;
 
-ParseResult CommandParser::parseInput(char input, ScreenSize text_area_size, const Settings& settings) {
+ParseResult CommandParser::parseInput(char input, ParsingContext context) {
     m_details.has_value()? parseAsParameter(input) : parseAsOperator(input);
     
-    ParseResult result = generateActions(text_area_size, settings);
+    ParseResult result = generateActions(context);
     if (m_details.has_value() && m_details->is_complete) {
         m_details = std::nullopt;
     }
@@ -223,7 +224,7 @@ void CommandParser::parseAsParameter(char input) {
     }
 }
 
-ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Settings& settings) {
+ParseResult CommandParser::generateActions(ParsingContext context) {
     if (!m_details.has_value() ) {
         return emptyParse();
     }
@@ -240,18 +241,19 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Sett
     /// Movement
 
     case Operator::MOVE_BY_CHARACTER: {
-        return generateCharacterwiseMove(text_area_size);
+        return generateCharacterwiseMove(context.text_area_size);
     }
 
     case Operator::MOVE_FIND: {
-        return generateMultiCharacterMove(text_area_size, EndBehavior::STOP_ON_END);
+        return generateMultiCharacterMove(context, EndBehavior::STOP_ON_END);
     }
+
     case Operator::MOVE_WITHIN_CHUNK: {
-        return generateMultiCharacterMove(text_area_size, EndBehavior::STOP_BEFORE_END);
+        return generateMultiCharacterMove(context, EndBehavior::STOP_BEFORE_END);
     }
 
     case Operator::MOVE_OVER_CHUNK: {
-        return generateMultiCharacterMove(text_area_size, EndBehavior::STOP_AFTER_END);
+        return generateMultiCharacterMove(context, EndBehavior::STOP_AFTER_END);
     }
 
     /// Editing
@@ -261,17 +263,17 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Sett
     }
 
     case Operator::PARAGRAPH_CREATE: {
-        return generatParagraphCreationCommand(text_area_size);
+        return generatParagraphCreationCommand(context);
     }
 
     case Operator::PARAGRAPH_JOIN: {
+        auto [start, end] = SectionResolver::fromScope(context.state, {
+            .scope = Scope::PARAGRAPH,
+            .end_behavior = EndBehavior::STOP_BEFORE_END,
+            .size = context.text_area_size
+        });
         return {ModeType::TOOL_MODE, {
-            make_shared<ScopeMoveAction>(
-                text_area_size,
-                EndBehavior::STOP_BEFORE_END,
-                Scope::PARAGRAPH,
-                Direction::RIGHT
-            ),
+            make_shared<SectionMoveAction>(start, end, Direction::RIGHT),
             make_shared<ParagraphJoiningAction>()
         }};
     }
@@ -284,34 +286,34 @@ ParseResult CommandParser::generateActions(ScreenSize text_area_size, const Sett
         return {ModeType::TOOL_MODE, {
             make_shared<EraseAction>(0, false),
             //make_shared<InsertAction>(*(m_details->argument)),
-            make_shared<CharwiseMoveAction>(text_area_size, Direction::LEFT)
+            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::LEFT)
         }};
     }
 
     case Operator::INDENT: {
         return {ModeType::TOOL_MODE, {
-            make_shared<IndentAction>(settings.isEnabled("do_skinny_tabs")? 2 : 4)
+            make_shared<IndentAction>(context.settings.isEnabled("do_skinny_tabs")? 2 : 4)
         }};
     }
 
     case Operator::UNINDENT: {
         return {ModeType::TOOL_MODE, {
-            make_shared<UnindentAction>(settings.isEnabled("do_skinny_tabs")? 2 : 4)
+            make_shared<UnindentAction>(context.settings.isEnabled("do_skinny_tabs")? 2 : 4)
         }};
     }
 
     case Operator::CASE_SET_LOWER: {
-        return generateCaseSetCommand(text_area_size, Case::LOWER_CASE);
+        return generateCaseSetCommand(context.text_area_size, Case::LOWER_CASE);
     }
 
     case Operator::CASE_SET_UPPER: {
-        return generateCaseSetCommand(text_area_size, Case::UPPER_CASE);
+        return generateCaseSetCommand(context.text_area_size, Case::UPPER_CASE);
     }
 
     ///
 
     case Operator::FILE_ACTION: {
-        return generateFileCommand(settings);
+        return generateFileCommand(context.settings);
     }
 
     case Operator::UNDO: {
@@ -392,62 +394,41 @@ std::string CommandParser::getAntiDelimiter(char delimiter) {
     return "";
 }
 
-ParseResult CommandParser::generateMultiCharacterMove(ScreenSize text_area_size, EndBehavior end_behavior) {
+ParseResult CommandParser::generateMultiCharacterMove(ParsingContext context, EndBehavior end_behavior) {
 
     // range or custom delimiter
     if (!m_details->scope.has_value()) {
+        auto [start, end] = SectionResolver::fromDelimiter(context.state, {
+            .delimiters = std::string(1, *(m_details->argument)),
+            .anti_delimiters =  getAntiDelimiter(*(m_details->argument)),
+            .end_behavior = end_behavior,
+            .paragraph_is_delimiter = false
+        });
+
         return {m_details->next_mode, {
-            make_shared<DelimiterMoveAction>(
-                std::string(1, *(m_details->argument)),
-                getAntiDelimiter(*(m_details->argument)),
-                m_details->direction,
-                end_behavior,
-                false
-            )}
-        };
+            make_shared<SectionMoveAction>(start, end, m_details->direction)
+        }};
     }
 
-    switch (m_details->scope.value()) {
-    case Scope::FILE:
-    case Scope::PARAGRAPH:
-    case Scope::LINE: {
-        return {m_details->next_mode, {make_shared<ScopeMoveAction>(
-            text_area_size,
-            end_behavior,
-            m_details->scope.value(),
-            m_details->direction
-        )}};
+    ScopeSettings settings = {
+        .scope = *(m_details->scope),
+        .size = context.text_area_size,
+        .end_behavior = end_behavior
+    };
+
+    if (settings.scope == Scope::EXPRESSION) {
+        settings.delimiters = m_expression_delimiters;
+    }
+    else if (settings.scope == Scope::WORD) {
+        settings.delimiters = m_word_delimiters;
     }
 
-    case Scope::EXPRESSION: {
-        return {m_details->next_mode, {
-            make_shared<DelimiterMoveAction>(
-                m_expression_delimiters,
-                "",
-                m_details->direction,
-                end_behavior,
-                true
-            )}
-        };
-    }
+    auto [start, end] = SectionResolver::fromScope(
+        context.state,
+        settings
+    );
+    return {m_details->next_mode, {make_shared<SectionMoveAction>(start, end, m_details->direction)}};
 
-    case Scope::WORD: {
-        return {m_details->next_mode, {
-            make_shared<DelimiterMoveAction>(
-                m_word_delimiters,
-                "",
-                m_details->direction,
-                end_behavior,
-                true
-            )}
-        };
-    }
-
-    default: {
-        break;
-    }
-
-    }
 }
 
 ParseResult CommandParser::generateCaseSetCommand(ScreenSize text_area_size, Case target_case) {
@@ -534,20 +515,19 @@ ParseResult CommandParser::generateFileCommand(const Settings& settings) {
     return {std::nullopt, {make_shared<MessageAction>(message)}};;
 }
 
-ParseResult CommandParser::generatParagraphCreationCommand(ScreenSize text_area_size) {
+ParseResult CommandParser::generatParagraphCreationCommand(ParsingContext context) {
+    auto [start, end] = SectionResolver::fromScope(context.state, {
+        .scope = Scope::PARAGRAPH,
+        .end_behavior = EndBehavior::STOP_BEFORE_END
+    });
+
     ParseResult result = {m_details->next_mode, {
-        make_shared<ScopeMoveAction>(
-            text_area_size,
-            EndBehavior::STOP_BEFORE_END,
-            Scope::PARAGRAPH,
-            m_details->direction
-        ),
-        //make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT),
+        make_shared<SectionMoveAction>(start, end, m_details->direction),
         make_shared<ParagraphSplittingAction>()
     }};
 
     if (m_details->direction == Direction::LEFT) {
-        result.actions.emplace_back(make_shared<CharwiseMoveAction>(text_area_size, Direction::UP));
+        result.actions.emplace_back(make_shared<CharwiseMoveAction>(context.text_area_size, Direction::UP));
     }
 
     return result;

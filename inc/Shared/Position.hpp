@@ -9,6 +9,7 @@
 #ifndef POSITION_HPP
 #define POSITION_HPP
 
+#include <string>
 
 struct Position {
     int row;

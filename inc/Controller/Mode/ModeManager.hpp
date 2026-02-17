@@ -14,7 +14,7 @@
 #include "../Action/Action.hpp"
 #include "EditorMode.hpp"
 #include "../../Shared/Input.hpp"
-
+#include "../Control/ParsingContext.hpp"
 class ModeManager {
 private:
     std::unique_ptr<EditorMode> m_current_mode;
@@ -30,8 +30,7 @@ public:
     /// @param input the user input
     /// @param size the current size of the text area
     /// @return a set of actions to execute
-    std::vector<std::shared_ptr<Action>> convertToAction(
-        Input input, ScreenSize actual_size, ScreenSize text_area_size, Settings settings, const EditorState& state);
+    std::vector<std::shared_ptr<Action>> convertToAction(Input input, ParsingContext context);
     
     /// @return the name of the current mode
     std::string getModeLabel() const;

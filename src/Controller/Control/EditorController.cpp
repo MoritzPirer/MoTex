@@ -57,11 +57,12 @@ void EditorController::mainLoop() {
 
         m_state.clearTemporaryMessages();
         vector<std::shared_ptr<Action>> actions = m_mode_manager.convertToAction(
-            input,
-            total_size,
-            calculateTextAreaSize(render_info, total_size),
-            m_settings,
-            m_state
+            input, {
+                m_state,
+                total_size,
+                calculateTextAreaSize(render_info, total_size),
+                m_settings,
+            }
         );
 
         ExecutionContext context = {m_state, m_history};

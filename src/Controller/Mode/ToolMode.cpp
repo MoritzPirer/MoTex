@@ -1,5 +1,6 @@
 #include <ncurses.h>
 #include "../../../inc/Controller/Mode/ToolMode.hpp"
+#include "../../../inc/Controller/Control/ParsingContext.hpp"
 #include "../../../inc/Controller/Action/IndentAction.hpp"
 #include "../../../inc/Controller/Action/UnindentAction.hpp"
 #include "../../../inc/Controller/Action/CharwiseMoveAction.hpp"
@@ -31,41 +32,41 @@ ParseResult ToolMode::parseMouseMovement(Position click_position,
     return {ModeType::TOOL_MODE, {make_shared<FixedPositionMoveAction>(text_area_size, adjusted_position)}};
 }
 
-ParseResult ToolMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_size, const Settings& settings) {
+ParseResult ToolMode::parseSpecialKey(SpecialKey key, ParsingContext context) {
     switch (key) {
     case SpecialKey::ARROW_LEFT: {
         return {ModeType::TOOL_MODE, {
-            make_shared<CharwiseMoveAction>(text_area_size, Direction::LEFT)
+            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::LEFT)
         }};
     }
 
     case SpecialKey::ARROW_DOWN: {
         return {ModeType::TOOL_MODE, {
-            make_shared<CharwiseMoveAction>(text_area_size, Direction::DOWN)
+            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::DOWN)
         }};
     }
 
     case SpecialKey::ARROW_UP: {
         return {ModeType::TOOL_MODE, {
-            make_shared<CharwiseMoveAction>(text_area_size, Direction::UP)
+            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::UP)
         }};
     }
 
     case SpecialKey::ARROW_RIGHT: {
         return {ModeType::TOOL_MODE, {
-            make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT)
+            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::RIGHT)
         }};
     }
 
     case SpecialKey::TAB: {
         return {ModeType::TOOL_MODE, {
-            make_shared<IndentAction>(settings.isEnabled("do_skinny_tabs")? 2 : 4)
+            make_shared<IndentAction>(context.settings.isEnabled("do_skinny_tabs")? 2 : 4)
         }};
     }
 
     case SpecialKey::SHIFT_TAB: {
         return {ModeType::TOOL_MODE, {
-            std::make_shared<UnindentAction>(settings.isEnabled("do_skinny_tabs")? 2 : 4)
+            std::make_shared<UnindentAction>(context.settings.isEnabled("do_skinny_tabs")? 2 : 4)
         }};
     }
 
@@ -76,23 +77,22 @@ ParseResult ToolMode::parseSpecialKey(SpecialKey key, ScreenSize text_area_size,
     }
 }
 
-ParseResult ToolMode::parseStandardInput(int input, ScreenSize text_area_size, const Settings& settings) {
-    return m_command_parser.parseInput(input, text_area_size, settings);
+ParseResult ToolMode::parseStandardInput(int input, ParsingContext context) {
+    return m_command_parser.parseInput(input, context);
 }
 
-ParseResult ToolMode::parseInput(Input input, ScreenSize actual_size,
-    ScreenSize text_area_size, const Settings& settings, const EditorState& state) {
+ParseResult ToolMode::parseInput(Input input, ParsingContext context) {
     
     if (input.mouse_position.has_value()) {
-        return parseMouseMovement(*input.mouse_position, actual_size, text_area_size);
+        return parseMouseMovement(*input.mouse_position, context.actual_size, context.text_area_size);
     }
 
     if (input.special_key.has_value()) {
-        return parseSpecialKey(*input.special_key, text_area_size, settings);
+        return parseSpecialKey(*input.special_key, context);
     }
 
     if (input.standard_input.has_value()) {
-        return parseStandardInput(*input.standard_input, text_area_size, settings);
+        return parseStandardInput(*input.standard_input, context);
     }
     
     return {ModeType::TOOL_MODE, {}};

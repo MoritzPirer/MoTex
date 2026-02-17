@@ -11,6 +11,7 @@
 
 #include "EditorMode.hpp"
 #include "../Control/CommandParser.hpp"
+#include "../Control/ParsingContext.hpp"
 
 class ToolMode: public EditorMode {
 private:
@@ -19,8 +20,8 @@ private:
     ParseResult parseMouseMovement(Position click_position,
         ScreenSize actual_size, ScreenSize text_area_size);
 
-    ParseResult parseSpecialKey(SpecialKey key, ScreenSize text_area_size, const Settings& settings);
-    ParseResult parseStandardInput(int input, ScreenSize text_area_size, const Settings& settings);
+    ParseResult parseSpecialKey(SpecialKey key, ParsingContext context);
+    ParseResult parseStandardInput(int input, ParsingContext context);
 public:
     ToolMode() = default;
     ToolMode(const ToolMode&) = default;
@@ -30,8 +31,7 @@ public:
     /// @param input the user input 
     /// @param size the current size of the writing area 
     /// @return the next mode and the action to execute 
-    ParseResult parseInput(Input input, ScreenSize actual_size,
-        ScreenSize text_area_size, const Settings& settings, const EditorState& state) override;
+    ParseResult parseInput(Input input, ParsingContext context) override;
 
     std::string getModeLabel() const override { return " TOOL MODE "; }
 };

@@ -19,6 +19,7 @@
 #include "../../Shared/Scope.hpp"
 #include "CommandDetails.hpp"
 #include "Operator.hpp"
+#include "ParsingContext.hpp"
 
 class CommandParser {
 private:
@@ -30,14 +31,14 @@ private:
     ParseResult emptyParse();
 
     ParseResult generateCharacterwiseMove(ScreenSize text_area_size);
-    ParseResult generateMultiCharacterMove(ScreenSize text_area_size, EndBehavior end_behaviour);
+    ParseResult generateMultiCharacterMove(ParsingContext context, EndBehavior end_behavior);
     
     ParseResult generateCaseSetCommand(ScreenSize text_area_size, Case target_case);
     ParseResult generateFileCommand(const Settings& settings);
-    ParseResult generatParagraphCreationCommand(ScreenSize text_area_size);
+    ParseResult generatParagraphCreationCommand(ParsingContext context);
     
     ParseResult generateHint();
-    ParseResult generateActions(ScreenSize text_area_size, const Settings& settings);
+    ParseResult generateActions(ParsingContext context);
     
     
     void parseAsOperator(char input);
@@ -54,7 +55,7 @@ public:
     CommandParser(const CommandParser&) = default;
     ~CommandParser() = default;
 
-    ParseResult parseInput(char input, ScreenSize text_area_size, const Settings& settings);
+    ParseResult parseInput(char input, ParsingContext context);
 
 };
 

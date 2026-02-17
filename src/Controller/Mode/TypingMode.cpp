@@ -71,7 +71,7 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key,
         }
         else if (delete_position.row > 0) { // otherwise move to end of prev if possible
             delete_position.row--;
-            delete_position.column = state.getParagraph(delete_position.row).length() - 1;
+            delete_position.column = std::max(static_cast<int>(state.getParagraph(delete_position.row).length()) - 1, 0);
         } 
         else {
             return {std::nullopt, {}};
@@ -104,22 +104,20 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key,
 }
 
 ParseResult TypingMode::parseInput(
-    Input input, ScreenSize actual_size, ScreenSize text_area_size, const Settings& settings, const EditorState& state) {
+    Input input, ParsingContext context) {
 
-    (void) settings;
-       
     if (input.mouse_position.has_value()) {
-        return parseMouseMovement(*input.mouse_position, actual_size, text_area_size);
+        return parseMouseMovement(*input.mouse_position, context.actual_size, context.text_area_size);
     }
 
     if (input.special_key.has_value()) {
-        return parseSpecialKey(*input.special_key, text_area_size, settings, state);
+        return parseSpecialKey(*input.special_key, context.text_area_size, context.settings, context.state);
     }
 
     if (input.standard_input.has_value()) {
         std::vector<std::string> content = {std::string(1, *input.standard_input)};
         return {ModeType::TYPING_MODE, {
-            std::make_shared<InsertAction>(content, state.getCursor().getPosition()),
+            std::make_shared<InsertAction>(content, context.state.getCursor().getPosition()),
             // std::make_shared<CharwiseMoveAction>(text_area_size, Direction::RIGHT)
         }};
     } 
