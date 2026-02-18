@@ -1,7 +1,7 @@
 #include <ncurses.h>
 
 #include "../../inc/View/UiHandler.hpp"
-#include "../../inc/Shared/SpecialKey.hpp"
+#include "../../inc/Shared/Types/SpecialKey.hpp"
 
 void UiHandler::renderLine(int start_visual_row, const std::string& line) {
     mvprintw(start_visual_row, 0, "%s", line.c_str());

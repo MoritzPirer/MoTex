@@ -1,6 +1,5 @@
-#include <algorithm>
 #include "../../inc/Model/TextFile.hpp"
-#include "../../inc/Shared/StringHelpers.hpp"
+#include "../../inc/Shared/Utils/StringHelpers.hpp"
 
 TextFile::TextFile(std::filesystem::path file_path, SaveState save_state):
     m_absolute_file_path{file_path},

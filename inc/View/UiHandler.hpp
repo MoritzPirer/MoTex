@@ -10,10 +10,9 @@
 #define UI_HANDLER_HPP
 
 #include "NcursesSession.hpp"
-
-#include "../Shared/ScreenSize.hpp"
-#include "../Shared/RenderInfo.hpp"
-#include "../Shared/Input.hpp"
+#include "../Shared/Types/ScreenSize.hpp"
+#include "../Shared/DataFlow/RenderInfo.hpp"
+#include "../Shared/Types/Input.hpp"
 
 class UiHandler {
 private:

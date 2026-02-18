@@ -12,10 +12,10 @@
 
 #include <optional>
 
-#include "../../inc/Model/TextFile.hpp"
-#include "../../inc/Model/Cursor.hpp"
-#include "../../inc/Shared/ScreenSize.hpp"
-#include "../../inc/Shared/Direction.hpp"
+#include "TextFile.hpp"
+#include "Cursor.hpp"
+#include "../Shared/Types/ScreenSize.hpp"
+#include "../Shared/Types/Direction.hpp"
 
 class EditorState {
 private:

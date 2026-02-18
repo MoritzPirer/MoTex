@@ -11,8 +11,7 @@
 
 #include <stddef.h>
 
-#include "../../inc/Model/TextFile.hpp"
-#include "../../inc/Shared/Position.hpp"
+#include "../Shared/Types/Position.hpp"
 
 class Cursor {
 private:

@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "../Shared/Position.hpp"
+#include "../Shared/Types/Position.hpp"
 #include "SaveState.hpp"
 
 class TextFile {

@@ -1,7 +1,5 @@
 #include "../../inc/Model/EditorState.hpp"
 
-#include <ncurses.h>
-
 using std::string;
 
 bool EditorState::isCursorInLastRowOfParagraph(int screen_width) {
