@@ -309,13 +309,45 @@ ParseResult CommandCreator::generatParagraphCreationCommand(CommandDetails detai
     if (details.direction == Direction::LEFT) {
         return {details.next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
             make_shared<SpanMoveAction>(start, end, details.direction),
-            make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition()),
-            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::UP)
+            make_shared<ParagraphSplittingAction>(start),
         })};
     }
-
+    
     return {details.next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
         make_shared<SpanMoveAction>(start, end, details.direction),
-        make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition()),
+        make_shared<ParagraphSplittingAction>(end),
+        make_shared<CharwiseMoveAction>(context.text_area_size, Direction::RIGHT)
     })};
 }
+
+// ParseResult CommandCreator::generateDeleteCommand(CommandDetails details, ParsingContext context) {
+//     // range or custom delimiter
+//     if (!details.scope.has_value()) {
+//         auto [start, end] = SpanResolver::fromDelimiter(context.state, {
+//             .delimiters = std::string(1, *(details.argument)),
+//             .anti_delimiters = getAntiDelimiter(*(details.argument)),
+//             .end_behavior = EndBehavior::STOP_BEFORE_END,
+//             .paragraph_is_delimiter = false
+//         });
+
+//         return {details.next_mode, make_shared<DeleteAction>(start, end)};
+//     }
+
+//     ScopeSettings settings = {
+//         .scope = *(details.scope),
+//         .size = context.text_area_size,
+//         .end_behavior = EndBehavior::STOP_BEFORE_END
+//     };
+
+//     if (settings.scope == Scope::EXPRESSION) {
+//         settings.delimiters = m_expression_delimiters;
+//     }
+//     else if (settings.scope == Scope::WORD) {
+//         settings.delimiters = m_word_delimiters;
+//     }
+
+//     auto [start, end] = SpanResolver::fromScope(context.state, settings);
+
+//     return {details.next_mode, make_shared<DeleteAction>(start, end)};
+
+// }
