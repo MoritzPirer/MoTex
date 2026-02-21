@@ -34,6 +34,9 @@ private:
 
     bool isOverhangPosition(Position position);
 
+    std::vector<std::string> copySingleLine(Position start, Position end);
+    std::vector<std::string> copyMultipleLines(Position start, Position end);
+
 public:
     TextFile() = default;
     TextFile(const std::string& file_name, SaveState save_state);

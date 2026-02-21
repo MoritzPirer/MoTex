@@ -118,6 +118,43 @@ void TextFile::setCharacterAt(char character_to_set, Position position) {
     calculateMetadata();
 }
 
+std::vector<std::string> TextFile::copySingleLine(Position start, Position end) {
+    const std::string& row = m_file_content.at(start.row);
+    
+    if (isOverhangPosition(end)) {
+        return {
+            row.substr(start.column),
+            ""
+        };
+    }
+    else {
+        return {row.substr(start.column, end.column - start.column + 1)};
+    }
+
+}
+
+std::vector<std::string> TextFile::copyMultipleLines(Position start, Position end) {
+    std::vector<std::string> result;
+
+    result.push_back(m_file_content.at(start.row).substr(start.column));
+
+    for (int i = start.row + 1; i < end.row; ++i) {
+        result.push_back(m_file_content.at(i));
+    }
+
+    
+    int end_row_len = static_cast<int>(m_file_content.at(end.row).length());
+    if (end.column >= end_row_len) {
+        result.push_back(m_file_content.at(end.row));
+        result.push_back(""); 
+    }
+    else {
+        result.push_back(m_file_content.at(end.row).substr(0, end.column + 1));
+    }
+
+    return result;
+}
+
 std::vector<std::string> TextFile::copyRange(Position start, Position end) {
     if (!isValidCursorPosition(start) || !isValidCursorPosition(end)) {
         throw std::invalid_argument("copy start " + start.format()
@@ -129,72 +166,11 @@ std::vector<std::string> TextFile::copyRange(Position start, Position end) {
         throw std::invalid_argument("End before Start!");
     }
 
-    // // IN AUSTRIA, WE CALL THIS 'PFUSCH'. FIX THIS PROPERLY SOON
-    // if (!isValidTextPosition(start) || !isValidTextPosition(end)) {
-    //     return {""};
-    // }
-
-    // std::vector<std::string> copy;
-    // copy.reserve(end.row - start.row + 1);
-
-    // for (int row = start.row; row <= end.row; row++) {
-    //     std::string& current = m_file_content.at(row);
-    //     int start_column = (row == start.row? start.column : 0);
-    //     int end_column = (row == end.row? end.column : current.length() - 1);
-
-    //     copy.emplace_back(current.substr(start_column, end_column - start_column + 1));
-    // }
-
-    // return copy;
-    // if (!isValidCursorPosition(start) || !isValidCursorPosition(end)) {
-    //     throw std::invalid_argument("Invalid copy range");
-    // }
-
-    // // 1. Normalize range
-    // if (start.row > end.row || (start.row == end.row && start.column > end.column)) {
-    //     std::swap(start, end);
-    // }
-
-    std::vector<std::string> result;
-
-    // Case A: Single Line Copy
     if (start.row == end.row) {
-        int row_len = (int)m_file_content.at(start.row).length();
-        
-        // If end is at the overhang, we captured the newline
-        if (end.column >= row_len) {
-            // Part 1: Text from start to end of string
-            result.push_back(m_file_content.at(start.row).substr(start.column));
-            // Part 2: An empty string to represent the "rest" of the line after the newline
-            result.push_back(""); 
-        } else {
-            // Just a standard substring within the line
-            int count = end.column - start.column + 1;
-            result.push_back(m_file_content.at(start.row).substr(start.column, count));
-        }
+        return copySingleLine(start, end);
     } 
-    // Case B: Multi-line Copy
-    else {
-        // 1. Start Line: from start.column to the end of that string
-        result.push_back(m_file_content.at(start.row).substr(start.column));
 
-        // 2. Intermediate Lines: full strings
-        for (int i = start.row + 1; i < end.row; ++i) {
-            result.push_back(m_file_content.at(i));
-        }
-
-        // 3. End Line: up to end.column (inclusive)
-        int end_row_len = (int)m_file_content.at(end.row).length();
-        if (end.column >= end_row_len) {
-            // We included the overhang of the end line
-            result.push_back(m_file_content.at(end.row));
-            result.push_back(""); // Triggers the split in insertLines
-        } else {
-            result.push_back(m_file_content.at(end.row).substr(0, end.column + 1));
-        }
-    }
-
-    return result;
+    return copyMultipleLines(start, end);
 }
 
 void TextFile::deleteRange(Position start, Position end) {
@@ -208,39 +184,34 @@ void TextFile::deleteRange(Position start, Position end) {
         throw std::invalid_argument("End before Start!");
     }
 
-// 2. Identify the "Suffix": content from the character AFTER the inclusive end
     std::string suffix = "";
-    int suffix_row = end.row;
-    int suffix_col = end.column + 1;
+    Position suffix_position = { end.row, end.column + 1};
 
     // Check if the character after 'end' forces us to the next line
-    if (suffix_col > (int)m_file_content.at(end.row).length()) {
-        suffix_row++;
-        suffix_col = 0;
+    if (suffix_position.column > static_cast<int>(m_file_content.at(end.row).length())) {
+        suffix_position.row++;
+        suffix_position.column = 0;
     }
-
+    
     // Capture the suffix if it's within file bounds
-    if (suffix_row < (int)m_file_content.size()) {
-        suffix = m_file_content.at(suffix_row).substr(suffix_col);
+    if (suffix_position.row < static_cast<int>(m_file_content.size())) {
+        suffix = m_file_content.at(suffix_position.row).substr(suffix_position.column);
     }
 
-    // 3. Update the start line
-    // We keep the 'prefix' of the start row and attach the 'suffix' of the end row
     m_file_content.at(start.row) = m_file_content.at(start.row).substr(0, start.column) + suffix;
 
-    // 4. Delete the engulfed lines
-    // We remove every line index from (start.row + 1) up to suffix_row
-    if (suffix_row > start.row) {
+    if (suffix_position.row > start.row) {
         auto erase_begin = m_file_content.begin() + start.row + 1;
-        // We go to suffix_row + 1 because the line at suffix_row was merged into start.row
-        auto erase_end = m_file_content.begin() + std::min((int)m_file_content.size(), suffix_row + 1);
+
+        // suffix_row + 1 because the line at suffix_row was merged into start.row
+        auto erase_end = m_file_content.begin()
+            + std::min((int)m_file_content.size(), suffix_position.row + 1);
         
         if (erase_begin < m_file_content.end() && erase_begin < erase_end) {
             m_file_content.erase(erase_begin, erase_end);
         }
     }
 
-    // 5. Paragraph Cleanup
     // If the entire file was deleted, ensure one empty line remains.
     if (m_file_content.empty()) {
         m_file_content.push_back("");
