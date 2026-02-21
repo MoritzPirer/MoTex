@@ -23,6 +23,8 @@ private:
     std::stack<std::shared_ptr<Action>> m_redoable_actions;
     static constexpr int c_max_history_size = 100;
 
+    bool m_merge_possible = true;
+
 public:
     UndoRedoManager() = default;
     UndoRedoManager(const UndoRedoManager&) = default;

@@ -24,9 +24,13 @@ public:
 
     void apply(ExecutionContext& context) override;
 
+    bool canBeUndone() const override;
+
     void undo(EditorState& state) override;
 
-    bool canBeUndone() const override;
+    bool canAbsorb(const std::shared_ptr<Action>& action) const override;
+
+    void absorb(const std::shared_ptr<Action>& action) override;
 };
 
 #endif //INSERT_ACTION_HPP

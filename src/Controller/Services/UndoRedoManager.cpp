@@ -6,11 +6,21 @@ using std::shared_ptr;
 
 void UndoRedoManager::add(shared_ptr<Action> action) {
     if (!action->canBeUndone()) {
+        m_merge_possible = false;
         return;
     }
 
-    m_undoable_actions.push_back(action);
-    m_redoable_actions = std::stack<shared_ptr<Action>>();
+    if (m_merge_possible && !m_undoable_actions.empty()
+        && m_undoable_actions.back()->canAbsorb(action)) {
+
+        m_undoable_actions.back()->absorb(action);
+    }
+    else {
+        m_merge_possible = true;
+        m_undoable_actions.push_back(action);
+        m_redoable_actions = std::stack<shared_ptr<Action>>();
+    }
+
 
     if (m_undoable_actions.size() > c_max_history_size) {
         m_undoable_actions.pop_front();

@@ -9,6 +9,7 @@
 #ifndef ACTION_HPP
 #define ACTION_HPP
 
+#include <memory>
 #include "../../Model/EditorState.hpp"
 #include "../../Shared/Types/ScreenSize.hpp"
 
@@ -23,10 +24,18 @@ public:
     virtual void apply(ExecutionContext& context) = 0;
 
     // all undoable actions must override this
-    virtual void undo(EditorState& state) { (void) state; }; 
+    virtual bool canBeUndone() const { return false; }
 
     // all undoable actions must override this
-    virtual bool canBeUndone() const { return false; };
+    virtual void undo(EditorState& state) { (void) state; } 
+
+    // all actions that can merge must override this
+    virtual bool canAbsorb(const std::shared_ptr<Action>& action) const {
+        (void) action;
+        return false;
+    }
+
+    virtual void absorb(const std::shared_ptr<Action>& action) { (void) action; }
 };
 
 #endif //ACTION_HPP

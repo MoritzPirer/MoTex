@@ -36,10 +36,7 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key,
             return {std::nullopt, {}};
         }
 
-        return {ModeType::TYPING_MODE, {std::make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
-            std::make_shared<DeleteAction>(delete_position, delete_position, cursor),
-            // std::make_shared<CharwiseMoveAction>(context.text_area_size, Direction::LEFT)
-        })}};
+        return {ModeType::TYPING_MODE, std::make_shared<DeleteAction>(delete_position, delete_position, cursor)};
     }
 
     case SpecialKey::ENTER: {

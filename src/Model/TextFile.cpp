@@ -17,7 +17,7 @@ TextFile::TextFile(const std::string& file_path, SaveState save_state):
 
 bool TextFile::isOverhangPosition(Position position) {
     if (static_cast<size_t>(position.row) < m_file_content.size()
-        || static_cast<size_t>(position.column) == m_file_content.at(position.row).length()) {
+        && static_cast<size_t>(position.column) == m_file_content.at(position.row).length()) {
             
         return true;
     }
