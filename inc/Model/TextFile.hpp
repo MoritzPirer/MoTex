@@ -57,7 +57,6 @@ public:
     /// @param line the line to add
     void writeToEnd(const std::string& line);
 
-
     void insertCharacterAt(char character_to_add, Position position);
 
     /// @brief inserts the given content into the file at the given position

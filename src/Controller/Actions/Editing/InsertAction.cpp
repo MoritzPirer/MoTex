@@ -15,6 +15,8 @@ void InsertAction::apply(ExecutionContext& context) {
     };
 
     context.state.moveCursorTo(first_after_insert);
+
+    context.state.requestBackup();
 }
 
 bool InsertAction::canBeUndone() const {
@@ -26,9 +28,11 @@ void InsertAction::undo(EditorState& state) {
         static_cast<int>(m_start.row + m_content.size() - 1),
         static_cast<int>(m_content.back().length() + (m_content.size() == 1? m_start.column : 0) - 1)
     };
-    // state.addTemporaryMessage("content: " + m_content.at(0) + " --- " + std::to_string(m_content.size()));
+    
     state.deleteRange(m_start, last_inserted);
     state.moveCursorTo(m_start);
+
+    state.requestBackup();
 }
 
 

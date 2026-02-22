@@ -16,6 +16,8 @@ void IndentAction::apply(ExecutionContext& context) {
     for (int _ = 0; _ < m_spaces_added; _++) {
         state.insertCharacterAt(' ', {m_row, 0});
     }
+    
+    state.requestBackup();
 }
 
 void IndentAction::undo(EditorState& state) {
@@ -27,6 +29,8 @@ void IndentAction::undo(EditorState& state) {
     for (int _ = 0; _ < m_spaces_added; _++) {
         state.moveCursorLeft();
     }
+
+    state.requestBackup();
 }
 
 bool IndentAction::canBeUndone() const {

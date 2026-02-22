@@ -35,11 +35,15 @@ void CaseSetAction::apply(ExecutionContext& context) {
 
     std::vector<std::string> changed_content = getContentAsCase();
     state.insertLines(changed_content, m_start);
+
+    state.requestBackup();
 }
 
 void CaseSetAction::undo(EditorState& state) {
     state.deleteRange(m_start, m_end);
     state.insertLines(m_original_content, m_start);
+
+    state.requestBackup();
 }
 
 bool CaseSetAction::canBeUndone() const {

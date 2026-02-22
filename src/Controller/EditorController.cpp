@@ -6,19 +6,49 @@
 
 using std::vector, std::string;
 
-EditorController::EditorController(std::optional<string> file_path):
-    m_mode_manager{ModeType::TOOL_MODE},
-    m_settings{} {
+const std::chrono::seconds EditorController::c_autosave_frequency = std::chrono::minutes(5);
 
-    TextFile file;
-    if (!file_path.has_value() || file_path->empty()) {
-        std::filesystem::path name = FileHandler::getDefaultName(); 
-        file = FileHandler::createFile(name);
+EditorController::EditorController(std::optional<string> file_path):
+    m_state(file_path.has_value() && !file_path->empty()?
+    FileHandler::openFile(file_path.value()) :
+    FileHandler::createFile(FileHandler::getDefaultName())),
+    m_mode_manager{ModeType::TOOL_MODE},
+    m_settings{}
+    {}
+
+EditorController::~EditorController() {
+    m_is_terminating.notify_all();
+
+    if (m_autosaver_thread.joinable()) {
+        m_autosaver_thread.join();
     }
-    else {
-        file = FileHandler::openFile(file_path.value());      
-    }
-    m_state = EditorState(file);
+}
+void EditorController::startAutoSaveLoop(std::filesystem::path executable_path) {
+    m_state.requestBackup();
+
+
+    std::filesystem::path backup_directory = FileHandler::createBackupLocation(executable_path);
+    std::filesystem::path backup_path = FileHandler::getBackupPath(m_state.getFile().getFilepath(), backup_directory);
+
+    m_autosaver_thread = std::thread([this, backup_path]() {
+        while (!m_state.getIsQuit()) {
+            std::unique_lock<std::mutex> lock(m_autosaver_lock);
+            m_is_terminating.wait_for(lock, c_autosave_frequency, [this] { return m_state.getIsQuit(); });
+
+            if (m_state.getIsQuit()) {
+                return;
+            }
+
+            if (m_state.needsBackup()) {
+                continue;
+            }
+
+            TextFile file_copy = m_state.getFile();
+            file_copy.setFilepath(backup_path);
+            FileHandler::saveFile(file_copy);
+            m_state.registerBackup();
+        }
+    });
 }
 
 RenderInfo EditorController::calculateRenderInfo(ScreenSize actual_size) {
@@ -26,9 +56,10 @@ RenderInfo EditorController::calculateRenderInfo(ScreenSize actual_size) {
 
     vector<vector<VisualSegment>> metadata_rows = renderer.calculateMetadataRows(actual_size);
 
-    ScreenSize text_area_size = actual_size;
-    text_area_size.height -= metadata_rows.size();
-    text_area_size.width -= renderer.calculateLineNumberWidth();
+    ScreenSize text_area_size = {
+        actual_size.height - static_cast<int>(metadata_rows.size()),
+        actual_size.width - renderer.calculateLineNumberWidth()
+    };
 
     return {
         renderer.calculateVisibleRows(text_area_size),
@@ -48,7 +79,8 @@ ScreenSize EditorController::calculateTextAreaSize(const RenderInfo& render_info
     };
 }
 
-void EditorController::mainLoop() {
+void EditorController::mainLoop(std::string executable_path) {
+    startAutoSaveLoop(executable_path);
     while (m_state.getIsQuit() == false) {
         ScreenSize total_size = m_ui_handler.screenSize();
         RenderInfo render_info = calculateRenderInfo(total_size);

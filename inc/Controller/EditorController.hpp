@@ -10,6 +10,10 @@
 #define EDITOR_CONTROLLER_HPP
 
 #include <optional>
+#include <thread>
+#include <atomic>
+#include <condition_variable>
+#include <mutex>
 
 #include "../View/UiHandler.hpp"
 #include "../Model/EditorState.hpp"
@@ -27,6 +31,15 @@ private:
     Settings m_settings;
     UndoRedoManager m_UndoRedoManager;
 
+    std::thread m_autosaver_thread;
+    static const std::chrono::seconds c_autosave_frequency;
+    std::atomic<bool> m_is_backed_up;
+
+    std::condition_variable m_is_terminating;
+    std::mutex m_autosaver_lock;
+
+    void startAutoSaveLoop(std::filesystem::path executable_path);
+
     /// @brief calculates what should be rendered to the screen
     RenderInfo calculateRenderInfo(ScreenSize actual_size);
 
@@ -34,10 +47,10 @@ private:
     
 public:
     EditorController(std::optional<std::string> file_path = std::nullopt);
-    virtual ~EditorController() = default;
+    virtual ~EditorController();
 
     /// @brief the main entry point for the editor
-    void mainLoop();
+    void mainLoop(std::string executable_path);
 };
 
 #endif //EDITOR_CONTROLLER_HPP

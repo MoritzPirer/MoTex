@@ -14,6 +14,8 @@ void DeleteAction::apply(ExecutionContext& context) {
     m_deleted_content = state.copyRange(m_start, m_end);
     state.deleteRange(m_start, m_end);
     state.moveCursorTo(m_start);
+
+    state.requestBackup();
 }
 
 bool DeleteAction::canBeUndone() const {
@@ -23,6 +25,8 @@ bool DeleteAction::canBeUndone() const {
 void DeleteAction::undo(EditorState& state) {
     state.insertLines(m_deleted_content, m_start);
     state.moveCursorTo(m_cursor);
+
+    state.requestBackup();
 }
 
 bool DeleteAction::isAdjacent(std::shared_ptr<DeleteAction> other) const {

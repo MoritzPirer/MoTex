@@ -15,12 +15,15 @@ void ParagraphJoiningAction::apply(ExecutionContext& context) {
         state.joinNextParagraphTo(row);
     }
 
+    state.requestBackup();
 }
 
 void ParagraphJoiningAction::undo(EditorState& state) {
     if (m_first_of_joinee.has_value()) {
         state.splitAt(*m_first_of_joinee);
     }
+
+    state.requestBackup();
 }
 
 bool ParagraphJoiningAction::canBeUndone() const {

@@ -130,7 +130,6 @@ std::vector<std::string> TextFile::copySingleLine(Position start, Position end) 
     else {
         return {row.substr(start.column, end.column - start.column + 1)};
     }
-
 }
 
 std::vector<std::string> TextFile::copyMultipleLines(Position start, Position end) {

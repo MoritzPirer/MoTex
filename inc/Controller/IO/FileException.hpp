@@ -14,13 +14,13 @@
 
 class FileException: public std::exception {
 private:
-  std::string message_;
+  std::string m_message;
 public:
-    FileException(): message_("FileException") {}
-    FileException(const std::string& msg): message_(msg) {}
+    FileException(): m_message("FileException") {}
+    FileException(const std::string& message): m_message(message) {}
 
     virtual const char* what() const noexcept override {
-        return message_.c_str();
+        return m_message.c_str();
     }
 };
 

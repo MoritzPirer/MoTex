@@ -34,6 +34,9 @@ namespace FileHandler {
 
     /// @brief finds a file path that is not currently in use
     std::filesystem::path getDefaultName();
+
+    std::filesystem::path createBackupLocation(std::filesystem::path executable_path);
+    std::filesystem::path getBackupPath(std::filesystem::path file_name, std::filesystem::path backup_directory);
 };
 
 

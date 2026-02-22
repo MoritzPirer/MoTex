@@ -12,7 +12,7 @@ The under-the-hood architecture is built around a Model-View-Controller architec
 
 ## KEY FEATURES
 
-intuitive command grammar, default UI meta info, in-editor settings planned
+intuitive command grammar, default UI meta info, in-editor settings planned, auto save
 
 ## GETTING STARTED
 
@@ -72,7 +72,6 @@ SYSTEM operator (!): Accepts one of the following arguments:
 - s: save
 
 ### UPCOMING COMMANDS
-(d,c,y,p) ( ., !, ?)
 
 DELETE operators (d & D): d (lowercase) accepts a scope or range. That area is deleted. D (uppercase) accepts an argument. The area from the cursor to the next occurence of the argument is deleted (including the argument and the starting position).
 
@@ -100,10 +99,9 @@ MoTex is written in C++ 20 using the ncurses library for rendering and input han
 What can it do, what can't it do, what will it be able to do soon
 
 In addition to the planned commands described above, the following features are planned:
-1. Auto Save (either after some amount of time or some number of edits)
-2. Changing settings at runtime (e.g. disabling UI color, relative vs absolute vs no line numbering, What meta information to display).
-3. Simple spell checking / typo detection
-4. Selection mode similar to vim's visual mode
+1. Changing settings at runtime (e.g. disabling UI color, relative vs absolute vs no line numbering, What meta information to display).
+2. Simple spell checking / typo detection
+3. Selection mode similar to vim's visual mode
 
 Some additional features are being considered, but are not guaranteed to be implemented
 1. vim-like macros

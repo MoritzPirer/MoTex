@@ -22,12 +22,16 @@ void UnindentAction::apply(ExecutionContext& context) {
     for (int _ = 0; _ < m_spaces_removed; _++) {
         state.moveCursorLeft();
     }
+
+    state.requestBackup();
 }
 
 void UnindentAction::undo(EditorState& state) {
     for (int _ = 0; _ < m_spaces_removed; _++) {
         state.insertCharacterAt(' ', {m_row, 0});
     }
+
+    state.requestBackup();
 }
 
 bool UnindentAction::canBeUndone() const {

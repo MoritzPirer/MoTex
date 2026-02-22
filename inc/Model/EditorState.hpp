@@ -11,6 +11,7 @@
 #define EDITOR_STATE_HPP
 
 #include <optional>
+#include <atomic>
 
 #include "TextFile.hpp"
 #include "Cursor.hpp"
@@ -21,7 +22,8 @@ class EditorState {
 private:
     TextFile m_file;
     Cursor m_cursor;
-    bool m_is_quit;
+    std::atomic<bool> m_is_quit;
+    std::atomic<bool> m_is_backed_up = false;
 
     std::vector<std::string> m_temporary_messages;
 
@@ -40,7 +42,7 @@ public:
 
     EditorState(TextFile file): m_file{file} {}  
     
-    EditorState(const EditorState&) = default;
+    EditorState(const EditorState&) = delete;
     ~EditorState() = default;
     
     /// @return the number of paragraphs in the file
@@ -49,6 +51,9 @@ public:
     size_t getNumberOfCharacters() const { return m_file.getNumberofCharacters(); }
 
     SaveState getSaveState() const { return m_file.getSaveState(); }
+    bool needsBackup() const { return m_is_backed_up; }
+    void requestBackup() { m_is_backed_up = false; }
+    void registerBackup() { m_is_backed_up = true; }
     std::string getFileName() const { return m_file.getFilepath().filename(); }
 
     const std::string& getParagraph(size_t row) const { return m_file.getParagraph(row); }

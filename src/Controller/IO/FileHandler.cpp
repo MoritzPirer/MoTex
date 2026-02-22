@@ -4,7 +4,7 @@
 #include "../../../inc/Controller/IO/FileException.hpp"
 #include "../../../inc/Controller/IO/FileHandler.hpp"
 
-using std::string;
+using std::string, std::filesystem::path;
 namespace {
 
     string constructDefaultFilename(int counter) {
@@ -21,8 +21,8 @@ namespace {
 
     std::ofstream openOutputFile(const TextFile& file) {
 
-        std::filesystem::path file_path = file.getFilepath();
-        std::filesystem::path parent_directory = file_path.parent_path();
+        path file_path = file.getFilepath();
+        path parent_directory = file_path.parent_path();
 
         if (!parent_directory.empty()) {
             std::filesystem::create_directories(parent_directory);
@@ -31,7 +31,7 @@ namespace {
         std::ofstream output_file(file.getFilepath().string());
     
         if (!output_file.is_open()) {
-            throw FileException();
+            throw FileException("Unable to open file '" + file_path.string() + "'!");
         }
 
         return output_file;
@@ -83,7 +83,7 @@ TextFile FileHandler::openFile(const string& file_path) {
     return file;
 }
 
-TextFile FileHandler::createFile(std::filesystem::path file_path) {
+TextFile FileHandler::createFile(path file_path) {
     TextFile file(file_path, SaveState::NEW_FILE);
     file.writeToEnd("");
     return file;
@@ -97,28 +97,28 @@ void FileHandler::saveFile(TextFile& file) {
         output_file.close();
     }
     catch (const std::filesystem::filesystem_error& e) {
-        throw FileException();
+        throw FileException("A filesytem error occurred when saving!");
     }
 }
 
 void FileHandler::renameFile(TextFile& file, string new_path) {
-    std::filesystem::path new_file_path(new_path);
+    path new_file_path(new_path);
 
     if (new_file_path.is_absolute()) {
         file.setFilepath(new_file_path);
     }
     else {
-        std::filesystem::path base_directory = file.getFilepath().parent_path();
+        path base_directory = file.getFilepath().parent_path();
         file.setFilepath(base_directory/new_path); // '/' operator is concatination here
     }
 }
 
-std::filesystem::path FileHandler::getDefaultName() {
+path FileHandler::getDefaultName() {
     int counter = 0;
 
     while (true) {
         string default_name = constructDefaultFilename(counter);
-        std::filesystem::path default_path = std::filesystem::absolute(default_name);
+        path default_path = std::filesystem::absolute(default_name);
 
         if (!std::filesystem::exists(default_path)) {
             return default_path;
@@ -126,4 +126,18 @@ std::filesystem::path FileHandler::getDefaultName() {
 
         counter++;
     }
+}
+
+path FileHandler::createBackupLocation(path executable_path) {
+    std::filesystem::path backup_dir = executable_path.parent_path() / "backups"; 
+    std::filesystem::create_directories(backup_dir);
+
+    return backup_dir;
+}
+
+path FileHandler::getBackupPath(path file_path, path backup_directory) {
+    std::string backup_filename = file_path.stem().string()
+        + " (backup)" + file_path.extension().string();
+
+    return backup_directory / backup_filename;
 }
