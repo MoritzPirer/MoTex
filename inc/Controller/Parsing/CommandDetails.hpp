@@ -18,12 +18,13 @@
 
 struct CommandDetails {
     Operator operator_type;
-    Direction direction;
+    std::optional<Direction> direction;
     std::optional<Scope> scope;
     std::optional<char> argument;
-    ModeType next_mode;
+    std::optional<ModeType> next_mode;
 
-    bool is_complete;
+    bool is_complete = false;
+
 };
 
 #endif //COMMAND_DETAILS_HPP

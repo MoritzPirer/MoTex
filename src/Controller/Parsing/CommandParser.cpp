@@ -87,30 +87,22 @@ void CommandParser::parseAsOperator(char input) {
     std::unordered_map<char, CommandDetails> compound_commands = {
         {'m', {
             .operator_type = Operator::MOVE_TO_END,
-            .scope = std::nullopt,
             .direction = Direction::RIGHT,
-            .scope = std::nullopt,
             .next_mode = ModeType::TOOL_MODE
         }},
         {'M', {
             .operator_type = Operator::MOVE_TO_END,
-            .scope = std::nullopt,
             .direction = Direction::LEFT,
-            .scope = std::nullopt,
             .next_mode = ModeType::TOOL_MODE
         }},
         {'n', {
             .operator_type = Operator::MOVE_TO_NEXT,
-            .scope = std::nullopt,
             .direction = Direction::RIGHT,
-            .scope = std::nullopt,
             .next_mode = ModeType::TOOL_MODE
         }},
         {'N', {
             .operator_type = Operator::MOVE_TO_NEXT,
-            .scope = std::nullopt,
             .direction = Direction::LEFT,
-            .scope = std::nullopt,
             .next_mode = ModeType::TOOL_MODE
         }},
         {'a', {
@@ -141,22 +133,26 @@ void CommandParser::parseAsOperator(char input) {
         }},
         {'t', {
             .operator_type = Operator::CASE_SET_LOWER,
-            .scope = std::nullopt
         }},
         {'T', {
             .operator_type = Operator::CASE_SET_UPPER,
-            .scope = std::nullopt
         }},
         {'d', {
             .operator_type = Operator::DELETE_WITHIN,
-            .scope = std::nullopt,
-            .next_mode = ModeType::TOOL_MODE,
-
+            .next_mode = ModeType::TOOL_MODE
         }},
         {'c', {
             .operator_type = Operator::DELETE_WITHIN,
-            .scope = std::nullopt,
-            .next_mode = ModeType::TYPING_MODE,
+            .next_mode = ModeType::TYPING_MODE
+
+        }},
+        {'D', {
+            .operator_type = Operator::DELETE_UNTIL,
+            .next_mode = ModeType::TOOL_MODE
+        }},
+        {'C', {
+            .operator_type = Operator::DELETE_UNTIL,
+            .next_mode = ModeType::TYPING_MODE
 
         }}
     };
@@ -205,6 +201,7 @@ void CommandParser::parseAsParameter(char input) {
     }
 
     // Operators that take an argument
+    case Operator::DELETE_UNTIL:
     case Operator::REPLACE:
     case Operator::MOVE_TO_FIND:
     case Operator::FILE_ACTION: {

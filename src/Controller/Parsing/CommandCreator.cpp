@@ -69,7 +69,11 @@ ParseResult CommandCreator::generateActions(std::optional<CommandDetails> detail
     }
 
     case Operator::DELETE_WITHIN: {
-        return generateDeleteCommand(*details, context);
+        return generateDeleteWithinCommand(*details, context);
+    }
+
+    case Operator::DELETE_UNTIL: {
+        return generateDeleteUntilCommand(*details, context);
     }
 
     case Operator::PARAGRAPH_CREATE: {
@@ -151,21 +155,47 @@ ParseResult CommandCreator::generateHint(CommandDetails details) {
     // only applies to compound commands
     switch (details.operator_type) {
 
+    case Operator::DELETE_WITHIN: {
+        return {std::nullopt, 
+            make_shared<NotifyAction>("Enter a scope or range to delete!")
+        };
+    }
+    case Operator::DELETE_UNTIL: {
+        return {std::nullopt, 
+            make_shared<NotifyAction>("Enter the end of the section to delete!")
+        };
+    }
+
     case Operator::MOVE_TO_END:
-    case Operator::MOVE_TO_NEXT:
-    case Operator::CASE_SET_UPPER:
+    case Operator::MOVE_TO_NEXT: {
+        return {std::nullopt, 
+            make_shared<NotifyAction>("Enter a scope or range!")
+        };
+    }
+
+    case Operator::CASE_SET_UPPER: {
+        return {std::nullopt, 
+            make_shared<NotifyAction>("Enter a scope or range to set to uppercase!")
+        };
+    }
+
     case Operator::CASE_SET_LOWER: {
         return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a scope (w,e,p,l,f) or a range identifier ( \",',(,[, {, <)!")
+            make_shared<NotifyAction>("Enter a scope or range to set to lowercase!")
         };
     }
     
-    case Operator::MOVE_TO_FIND:
-    case Operator::REPLACE: {
+    case Operator::MOVE_TO_FIND: {
         return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a character argument (letter, digit, special character)!")
+            make_shared<NotifyAction>("Enter a character to find!")
         };
 
+    }
+
+    case Operator::REPLACE: {
+        return {std::nullopt, 
+            make_shared<NotifyAction>("Enter a character to replace the selected character!")
+        };
     }
 
     case Operator::FILE_ACTION: {
@@ -182,7 +212,7 @@ ParseResult CommandCreator::generateHint(CommandDetails details) {
 
 ParseResult CommandCreator::generateCharacterwiseMove(CommandDetails details, ScreenSize text_area_size) {
     return {ModeType::TOOL_MODE, 
-        make_shared<CharwiseMoveAction>(text_area_size, details.direction)
+        make_shared<CharwiseMoveAction>(text_area_size, *details.direction)
     };
 }
 
@@ -220,7 +250,7 @@ ParseResult CommandCreator::generateSpanMove(CommandDetails details, ParsingCont
         });
 
         return {details.next_mode, 
-            make_shared<SpanMoveAction>(start, end, details.direction)
+            make_shared<SpanMoveAction>(start, end, *details.direction)
         };
     }
 
@@ -242,7 +272,7 @@ ParseResult CommandCreator::generateSpanMove(CommandDetails details, ParsingCont
         settings
     );
 
-    return {details.next_mode, make_shared<SpanMoveAction>(start, end, details.direction)};
+    return {details.next_mode, make_shared<SpanMoveAction>(start, end, *details.direction)};
 }
 
 ParseResult CommandCreator::generateCaseSetCommand(CommandDetails details, ParsingContext context, Case target_case) {
@@ -311,21 +341,21 @@ ParseResult CommandCreator::generatParagraphCreationCommand(CommandDetails detai
         .end_behavior = EndBehavior::STOP_BEFORE_END
     });
 
-    if (details.direction == Direction::LEFT) {
+    if (*details.direction == Direction::LEFT) {
         return {details.next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
-            make_shared<SpanMoveAction>(start, end, details.direction),
+            make_shared<SpanMoveAction>(start, end, *details.direction),
             make_shared<ParagraphSplittingAction>(start),
         })};
     }
     
     return {details.next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
-        make_shared<SpanMoveAction>(start, end, details.direction),
+        make_shared<SpanMoveAction>(start, end, *details.direction),
         make_shared<ParagraphSplittingAction>(end),
         make_shared<CharwiseMoveAction>(context.text_area_size, Direction::RIGHT)
     })};
 }
 
-ParseResult CommandCreator::generateDeleteCommand(CommandDetails details, ParsingContext context) {
+ParseResult CommandCreator::generateDeleteWithinCommand(CommandDetails details, ParsingContext context) {
     Position cursor = context.state.getCursor().getPosition();
 
     // range or custom delimiter
@@ -358,4 +388,17 @@ ParseResult CommandCreator::generateDeleteCommand(CommandDetails details, Parsin
 
     return {details.next_mode, make_shared<DeleteAction>(start, end, cursor)};
 
+}
+
+ParseResult CommandCreator::generateDeleteUntilCommand(CommandDetails details, ParsingContext context) {
+    Position cursor = context.state.getCursor().getPosition();
+
+    auto [dummy, end] = SpanResolver::fromDelimiter(context.state, {
+        .delimiters = std::string(1, *(details.argument)),
+        .anti_delimiters = getAntiDelimiter(*(details.argument)),
+        .end_behavior = EndBehavior::STOP_BEFORE_END,
+        .paragraph_is_delimiter = false
+    });
+
+    return {details.next_mode, make_shared<DeleteAction>(cursor, end, cursor)};
 }

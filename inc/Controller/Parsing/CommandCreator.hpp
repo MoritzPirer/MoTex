@@ -29,7 +29,8 @@ private:
     ParseResult generateCaseSetCommand(CommandDetails details, ParsingContext context, Case target_case);
     ParseResult generateFileCommand(CommandDetails details, const Settings& settings);
     ParseResult generatParagraphCreationCommand(CommandDetails details, ParsingContext context);
-    ParseResult generateDeleteCommand(CommandDetails details, ParsingContext context);
+    ParseResult generateDeleteWithinCommand(CommandDetails details, ParsingContext context);
+    ParseResult generateDeleteUntilCommand(CommandDetails details, ParsingContext context);
 
     ParseResult generateHint(CommandDetails details);
     std::string getAntiDelimiter(char delimiter);
