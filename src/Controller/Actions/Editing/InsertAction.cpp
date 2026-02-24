@@ -1,9 +1,10 @@
 #include "../../../../inc/Controller/Actions/Editing/InsertAction.hpp"
 #include "../../../../inc/Controller/Actions/ExecutionContext.hpp"
 
-InsertAction::InsertAction(std::vector<std::string> content, Position start):
+InsertAction::InsertAction(std::vector<std::string> content, Position start, bool supress_merge):
     m_content{content},
-    m_start{start}
+    m_start{start},
+    m_supress_merge{supress_merge}
     {}
 
 void InsertAction::apply(ExecutionContext& context) {
@@ -24,12 +25,17 @@ bool InsertAction::canBeUndone() const {
 }
 
 void InsertAction::undo(EditorState& state) {
-    Position last_inserted = {
-        static_cast<int>(m_start.row + m_content.size() - 1),
-        static_cast<int>(m_content.back().length() + (m_content.size() == 1? m_start.column : 0) - 1)
-    };
-    
-    state.deleteRange(m_start, last_inserted);
+
+    int last_inserted_row = m_start.row + m_content.size() - 1;
+    int last_inserted_column = std::max(static_cast<int>(m_content.back().length()) - 1, 0);
+    if (m_content.size() == 1) {
+        last_inserted_column += m_start.column;
+    }
+    if (m_content.back().empty()) {
+        last_inserted_row--;
+    }
+
+    state.deleteRange(m_start, {last_inserted_row, last_inserted_column});
     state.moveCursorTo(m_start);
 
     state.requestBackup();
@@ -41,6 +47,10 @@ bool InsertAction::canAbsorb(const std::shared_ptr<Action>& action) const {
 
     if (insert_action == nullptr) {
         return false; // not an insert action
+    }
+
+    if (this->m_supress_merge || insert_action->m_supress_merge) {
+        return false;
     }
 
     if (insert_action->m_content.empty() || insert_action->m_content.front().empty()) {

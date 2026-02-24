@@ -1,3 +1,5 @@
+#include <unordered_map>
+
 #include "../../../inc/Controller/Parsing/CommandCreator.hpp"
 #include "../../../inc/Controller/Parsing/CommandDetails.hpp"
 #include "../../../inc/Controller/Parsing/ParsingContext.hpp"
@@ -13,6 +15,7 @@
 #include "../../../inc/Controller/Actions/System/NotifyAction.hpp"
 #include "../../../inc/Controller/Actions/System/UndoAction.hpp"
 #include "../../../inc/Controller/Actions/System/RedoAction.hpp"
+#include "../../../inc/Controller/Actions/System/CopyAction.hpp"
 
 #include "../../../inc/Controller/Actions/Editing/InsertAction.hpp"
 #include "../../../inc/Controller/Actions/Editing/DeleteAction.hpp"
@@ -26,6 +29,7 @@
 #include "../../../inc/Controller/Parsing/SpanResolver.hpp"
 
 using std::make_shared;
+typedef std::vector<std::shared_ptr<Action>> ActionList;
 
 ParseResult CommandCreator::generateActions(std::optional<CommandDetails> details, ParsingContext context) {
     if (!details.has_value() ) {
@@ -86,7 +90,7 @@ ParseResult CommandCreator::generateActions(std::optional<CommandDetails> detail
             .size = context.text_area_size,
             .end_behavior = EndBehavior::STOP_BEFORE_END
         });
-        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
+        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
             make_shared<SpanMoveAction>(start, end, Direction::RIGHT),
             make_shared<ParagraphJoiningAction>(context.state.getCursor().getPosition())
         })};
@@ -98,7 +102,7 @@ ParseResult CommandCreator::generateActions(std::optional<CommandDetails> detail
 
     case Operator::REPLACE: {
         Position cursor = state.getCursor().getPosition();
-        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
+        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
             make_shared<DeleteAction>(cursor, cursor, cursor),
             make_shared<InsertAction>(std::vector<std::string>{std::string(1, *(details->argument))}, cursor),
             make_shared<CharwiseMoveAction>(context.text_area_size, Direction::LEFT)
@@ -139,6 +143,14 @@ ParseResult CommandCreator::generateActions(std::optional<CommandDetails> detail
         return {ModeType::TOOL_MODE, make_shared<RedoAction>()};
     }
 
+    case Operator::COPY_WITHIN: {
+        return generateCopyWithinCommand(*details, context);
+    }
+
+    case Operator::PASTE: {
+        return gerneratePasteCommand(*details, context);
+    }
+
     default: {
         return emptyParse();
     }
@@ -152,62 +164,29 @@ ParseResult CommandCreator::emptyParse() {
 }
 
 ParseResult CommandCreator::generateHint(CommandDetails details) {
-    // only applies to compound commands
-    switch (details.operator_type) {
+    std::string scope_range_hint = "Enter a scope or range!";
+    
+    std::unordered_map<Operator, std::string> hints = {
+        {Operator::DELETE_UNTIL, "Enter the end of the section to delete!"},
+        {Operator::DELETE_WITHIN, "Enter a scope or range to delete!"},
+        {Operator::REPLACE, "Enter a character to replace the selected character!"},
 
-    case Operator::DELETE_WITHIN: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a scope or range to delete!")
-        };
-    }
-    case Operator::DELETE_UNTIL: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter the end of the section to delete!")
-        };
-    }
+        {Operator::MOVE_TO_END, scope_range_hint},
+        {Operator::MOVE_TO_NEXT, scope_range_hint},
+        {Operator::MOVE_TO_FIND, "Enter a character to find!"},
 
-    case Operator::MOVE_TO_END:
-    case Operator::MOVE_TO_NEXT: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a scope or range!")
-        };
-    }
+        {Operator::CASE_SET_UPPER, "Enter a scope or range to set to uppercase!"},
+        {Operator::CASE_SET_LOWER, "Enter a scope or range to set to lowercase!"},
 
-    case Operator::CASE_SET_UPPER: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a scope or range to set to uppercase!")
-        };
-    }
-
-    case Operator::CASE_SET_LOWER: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a scope or range to set to lowercase!")
-        };
+        {Operator::FILE_ACTION, "x to force quit, q to quit safely, Q to save and quit, s to save"}
+        
+    }; 
+    
+    if (hints.contains(details.operator_type)) {
+        return {std::nullopt, make_shared<NotifyAction>(hints.at(details.operator_type))};
     }
     
-    case Operator::MOVE_TO_FIND: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a character to find!")
-        };
-
-    }
-
-    case Operator::REPLACE: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter a character to replace the selected character!")
-        };
-    }
-
-    case Operator::FILE_ACTION: {
-        return {std::nullopt, 
-            make_shared<NotifyAction>("Enter an action identifier! Refer to the help command for more info!")
-        };
-    }
-    
-    default: {
-        return emptyParse();
-    }
-    }
+    return emptyParse();
 }
 
 ParseResult CommandCreator::generateCharacterwiseMove(CommandDetails details, ScreenSize text_area_size) {
@@ -219,13 +198,13 @@ ParseResult CommandCreator::generateCharacterwiseMove(CommandDetails details, Sc
 std::string CommandCreator::getAntiDelimiter(char delimiter) {
     std::unordered_map<char, std::string> indicators = {
         {'{', "}"},
+        {'}', "{"},
         {'<', ">"},
+        {'>', "<"},
         {'[', "]"},
         {'(', ")"},
-        {'}', "{"},
-        {'>', "<"},
-        {']', "["},
         {')', "("},
+        {']', "["},
         {'"', "\""},
         {'\'', "'"},
     };
@@ -318,7 +297,7 @@ ParseResult CommandCreator::generateFileCommand(CommandDetails details, const Se
         {'q', {std::nullopt, make_shared<QuitAction>(QuitMode::ONLY_IF_SAVED)}},
         {'x', {std::nullopt, make_shared<QuitAction>(QuitMode::FORCE_QUIT)}},
         {'s', {std::nullopt, make_shared<SaveAction>(confirmation)}},
-        {'Q', {std::nullopt, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
+        {'Q', {std::nullopt, make_shared<CompoundAction>(ActionList{
             make_shared<SaveAction>(confirmation),
             make_shared<QuitAction>(QuitMode::ONLY_IF_SAVED)
         })}}
@@ -342,13 +321,13 @@ ParseResult CommandCreator::generatParagraphCreationCommand(CommandDetails detai
     });
 
     if (*details.direction == Direction::LEFT) {
-        return {details.next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
+        return {details.next_mode, make_shared<CompoundAction>(ActionList{
             make_shared<SpanMoveAction>(start, end, *details.direction),
             make_shared<ParagraphSplittingAction>(start),
         })};
     }
     
-    return {details.next_mode, make_shared<CompoundAction>(std::vector<std::shared_ptr<Action>>{
+    return {details.next_mode, make_shared<CompoundAction>(ActionList{
         make_shared<SpanMoveAction>(start, end, *details.direction),
         make_shared<ParagraphSplittingAction>(end),
         make_shared<CharwiseMoveAction>(context.text_area_size, Direction::RIGHT)
@@ -401,4 +380,85 @@ ParseResult CommandCreator::generateDeleteUntilCommand(CommandDetails details, P
     });
 
     return {details.next_mode, make_shared<DeleteAction>(cursor, end, cursor)};
+}
+ParseResult CommandCreator::generateCopyWithinCommand(CommandDetails details, ParsingContext context) {
+    // range or custom delimiter
+    if (!details.scope.has_value()) {
+        auto [start, end] = SpanResolver::fromDelimiter(context.state, {
+            .delimiters = std::string(1, *(details.argument)),
+            .anti_delimiters = getAntiDelimiter(*(details.argument)),
+            .end_behavior = EndBehavior::STOP_BEFORE_END,
+            .paragraph_is_delimiter = false
+        });
+
+        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
+            make_shared<CopyAction>(start, end, CopyType::INLINE),
+            make_shared<NotifyAction>("Copied content to clipboard!")
+            })
+        };
+    }
+
+    // Scope given
+    ScopeSettings settings = {
+        .scope = *(details.scope),
+        .size = context.text_area_size,
+        .end_behavior = EndBehavior::STOP_BEFORE_END
+    };
+
+    CopyType type = CopyType::INLINE;
+    switch (settings.scope) {
+        case Scope::FILE:
+        case Scope::PARAGRAPH: {
+            type = CopyType::BLOCK;
+            break;
+        }
+        case Scope::EXPRESSION: {
+            settings.delimiters = m_expression_delimiters;
+            break;
+        }
+        case Scope::WORD: {
+            settings.delimiters = m_word_delimiters;
+            break;
+        }
+
+        default: {
+            break;
+        }
+    }
+
+    auto [start, end] = SpanResolver::fromScope(context.state, settings);
+    if (static_cast<size_t>(end.column)
+        == context.state.getParagraph(end.row).length() && end.column != 0) {
+        end.column--;
+    }
+
+    return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
+        make_shared<CopyAction>(start, end, type),
+        make_shared<NotifyAction>("Copied content to clipboard!")
+    })};
+}
+
+ParseResult CommandCreator::gerneratePasteCommand(CommandDetails details, ParsingContext context) {
+    std::optional<Clipboard> clipboard = context.state.getClipboard();
+    Position cursor = context.state.getCursor().getPosition();
+
+    if (!clipboard.has_value()) {
+        return {std::nullopt, make_shared<NotifyAction>(
+            "Nothing to paste! Copy text using the copy operator (y / Y).")};
+    }
+
+    if (clipboard->type == CopyType::INLINE) {
+        if (details.direction == Direction::LEFT) {
+            return {std::nullopt, make_shared<InsertAction>(clipboard->content, cursor, true)};
+        }
+        
+        //paste after cursor
+        if (static_cast<size_t>(cursor.column) < context.state.getParagraph(cursor.row).length()) {
+            cursor.column++;
+        }
+
+        return {std::nullopt, make_shared<InsertAction>(clipboard->content, cursor, true)};
+    }
+    return emptyParse();
+    //paste full line above / below cursor
 }

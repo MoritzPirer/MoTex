@@ -17,8 +17,9 @@ class InsertAction: public Action {
 private:
     std::vector<std::string> m_content;
     Position m_start;
+    bool m_supress_merge;
 public:
-    InsertAction(std::vector<std::string> content, Position start);
+    InsertAction(std::vector<std::string> content, Position start, bool supress_merge = false);
     InsertAction(const InsertAction&) = default;
     ~InsertAction() = default;
 

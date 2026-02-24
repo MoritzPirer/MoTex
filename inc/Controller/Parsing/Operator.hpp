@@ -10,28 +10,32 @@
 #define OPERATOR_TYPE_HPP
 
 enum class Operator {
-    MOVE_BY_CHARACTER,      //hjkl
-    MOVE_TO_END,      //mM, aA
-    MOVE_TO_NEXT,        //gm
-    MOVE_TO_FIND,              //fF
+    MOVE_BY_CHARACTER,
+    MOVE_TO_END,
+    MOVE_TO_NEXT,
+    MOVE_TO_FIND,
 
-    PARAGRAPH_JOIN,         //+
-    PARAGRAPH_SPLIT,        //-
-    PARAGRAPH_CREATE,       //oO
+    PARAGRAPH_JOIN,
+    PARAGRAPH_SPLIT,
+    PARAGRAPH_CREATE,
 
-    DELETE_SINGLE,                  //e
+    DELETE_SINGLE,
     DELETE_WITHIN,
     DELETE_UNTIL,
-    REPLACE,                //r
-    INDENT,                 //>
-    UNINDENT,               //<
-    CASE_SET_LOWER,         //t
-    CASE_SET_UPPER,         //T
+    REPLACE,
 
-    FILE_ACTION,            //!
-    SWITCH_MODE,            //i
+    INDENT,
+    UNINDENT,
+    CASE_SET_LOWER,
+    CASE_SET_UPPER,
+
+    FILE_ACTION,
+    SWITCH_MODE,
+
     UNDO,
-    REDO
+    REDO,
+    COPY_WITHIN,
+    PASTE
 };
 
 #endif //OPERATOR_TYPE_HPP

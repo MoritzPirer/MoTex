@@ -17,11 +17,14 @@
 #include "Cursor.hpp"
 #include "../Shared/Types/ScreenSize.hpp"
 #include "../Shared/Types/Direction.hpp"
+#include "Clipboard/Clipboard.hpp"
 
 class EditorState {
 private:
     TextFile m_file;
     Cursor m_cursor;
+    std::optional<Clipboard> m_clipboard = std::nullopt;
+
     std::atomic<bool> m_is_quit;
     std::atomic<bool> m_is_backed_up = false;
 
@@ -102,6 +105,8 @@ public:
     const std::vector<std::string>& getTemporaryMessages() const;
     void clearTemporaryMessages();
 
+    void setClipboard(Clipboard clipboard) { m_clipboard = clipboard; }
+    std::optional<Clipboard> getClipboard() const { return m_clipboard; }
 };
 
 #endif //EDITOR_STATE_HPP

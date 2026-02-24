@@ -33,8 +33,6 @@ private:
 
     std::thread m_autosaver_thread;
     static const std::chrono::seconds c_autosave_frequency;
-    std::atomic<bool> m_is_backed_up;
-
     std::condition_variable m_is_terminating;
     std::mutex m_autosaver_lock;
 

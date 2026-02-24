@@ -32,6 +32,9 @@ private:
     ParseResult generateDeleteWithinCommand(CommandDetails details, ParsingContext context);
     ParseResult generateDeleteUntilCommand(CommandDetails details, ParsingContext context);
 
+    ParseResult generateCopyWithinCommand(CommandDetails details, ParsingContext context);
+    ParseResult gerneratePasteCommand(CommandDetails details, ParsingContext context);
+
     ParseResult generateHint(CommandDetails details);
     std::string getAntiDelimiter(char delimiter);
 

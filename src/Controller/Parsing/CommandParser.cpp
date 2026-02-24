@@ -80,6 +80,14 @@ void CommandParser::parseAsOperator(char input) {
         }},
         {'U', {
             .operator_type = Operator::REDO,
+        }},
+        {'p', {
+            .operator_type = Operator::PASTE,
+            .direction = Direction::RIGHT
+        }},
+        {'P', {
+            .operator_type = Operator::PASTE,
+            .direction = Direction::LEFT
         }}
     };
 
@@ -154,6 +162,9 @@ void CommandParser::parseAsOperator(char input) {
             .operator_type = Operator::DELETE_UNTIL,
             .next_mode = ModeType::TYPING_MODE
 
+        }},
+        {'y', {
+            .operator_type = Operator::COPY_WITHIN
         }}
     };
 
@@ -180,6 +191,7 @@ void CommandParser::parseAsParameter(char input) {
     
     // Operators that take a scope or range indicator as a parameter
     case Operator::DELETE_WITHIN:
+    case Operator::COPY_WITHIN:
     case Operator::CASE_SET_LOWER:
     case Operator::CASE_SET_UPPER:
     case Operator::MOVE_TO_END:
