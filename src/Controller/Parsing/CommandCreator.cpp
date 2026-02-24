@@ -170,16 +170,12 @@ ParseResult CommandCreator::generateHint(CommandDetails details) {
         {Operator::DELETE_UNTIL, "Enter the end of the section to delete!"},
         {Operator::DELETE_WITHIN, "Enter a scope or range to delete!"},
         {Operator::REPLACE, "Enter a character to replace the selected character!"},
-
         {Operator::MOVE_TO_END, scope_range_hint},
         {Operator::MOVE_TO_NEXT, scope_range_hint},
         {Operator::MOVE_TO_FIND, "Enter a character to find!"},
-
         {Operator::CASE_SET_UPPER, "Enter a scope or range to set to uppercase!"},
         {Operator::CASE_SET_LOWER, "Enter a scope or range to set to lowercase!"},
-
         {Operator::FILE_ACTION, "x to force quit, q to quit safely, Q to save and quit, s to save"}
-        
     }; 
     
     if (hints.contains(details.operator_type)) {
@@ -190,9 +186,7 @@ ParseResult CommandCreator::generateHint(CommandDetails details) {
 }
 
 ParseResult CommandCreator::generateCharacterwiseMove(CommandDetails details, ScreenSize text_area_size) {
-    return {ModeType::TOOL_MODE, 
-        make_shared<CharwiseMoveAction>(text_area_size, *details.direction)
-    };
+    return {ModeType::TOOL_MODE, make_shared<CharwiseMoveAction>(text_area_size, *details.direction)};
 }
 
 std::string CommandCreator::getAntiDelimiter(char delimiter) {
@@ -213,12 +207,10 @@ std::string CommandCreator::getAntiDelimiter(char delimiter) {
         return indicators.at(delimiter);
     }
 
-    // already closed or symmetrical
     return "";
 }
 
 ParseResult CommandCreator::generateSpanMove(CommandDetails details, ParsingContext context, EndBehavior end_behavior) {
-
     // range or custom delimiter
     if (!details.scope.has_value()) {
         auto [start, end] = SpanResolver::fromDelimiter(context.state, {
@@ -228,11 +220,10 @@ ParseResult CommandCreator::generateSpanMove(CommandDetails details, ParsingCont
             .paragraph_is_delimiter = false
         });
 
-        return {details.next_mode, 
-            make_shared<SpanMoveAction>(start, end, *details.direction)
-        };
+        return {details.next_mode, make_shared<SpanMoveAction>(start, end, *details.direction)};
     }
 
+    // scope given
     ScopeSettings settings = {
         .scope = *(details.scope),
         .size = context.text_area_size,
@@ -246,15 +237,13 @@ ParseResult CommandCreator::generateSpanMove(CommandDetails details, ParsingCont
         settings.delimiters = m_word_delimiters;
     }
 
-    auto [start, end] = SpanResolver::fromScope(
-        context.state,
-        settings
-    );
+    auto [start, end] = SpanResolver::fromScope(context.state, settings);
 
     return {details.next_mode, make_shared<SpanMoveAction>(start, end, *details.direction)};
 }
 
 ParseResult CommandCreator::generateCaseSetCommand(CommandDetails details, ParsingContext context, Case target_case) {
+    // range or delimiter given
     if (!details.scope.has_value()) {
         auto [start, end] = SpanResolver::fromDelimiter(context.state, {
             .delimiters = std::string(1, *(details.argument)),
@@ -263,11 +252,10 @@ ParseResult CommandCreator::generateCaseSetCommand(CommandDetails details, Parsi
             .paragraph_is_delimiter = false
         });
 
-        return {details.next_mode, 
-            make_shared<CaseSetAction>(start, end, target_case)
-        };
+        return {details.next_mode, make_shared<CaseSetAction>(start, end, target_case)};
     }
 
+    // scope given
     ScopeSettings settings = {
         .scope = *(details.scope),
         .size = context.text_area_size,
@@ -281,10 +269,7 @@ ParseResult CommandCreator::generateCaseSetCommand(CommandDetails details, Parsi
         settings.delimiters = m_word_delimiters;
     }
 
-    auto [start, end] = SpanResolver::fromScope(
-        context.state,
-        settings
-    );
+    auto [start, end] = SpanResolver::fromScope(context.state, settings);
 
     return {details.next_mode, make_shared<CaseSetAction>(start, end, target_case)};
 }
@@ -301,16 +286,13 @@ ParseResult CommandCreator::generateFileCommand(CommandDetails details, const Se
             make_shared<SaveAction>(confirmation),
             make_shared<QuitAction>(QuitMode::ONLY_IF_SAVED)
         })}}
-
-        //TODO: rename, open settings
     };
 
     if (results.contains(*(details.argument))) {
         return results.at(*(details.argument));
     }
 
-    //return emptyParse();
-    std::string message = "You entered " + std::string(1, *(details.argument)) + " which is not a file command i know!";
+    std::string message = std::string(1, *(details.argument)) + " is not a known file command!";
     return {std::nullopt, make_shared<NotifyAction>(message)};
 }
 
@@ -381,6 +363,7 @@ ParseResult CommandCreator::generateDeleteUntilCommand(CommandDetails details, P
 
     return {details.next_mode, make_shared<DeleteAction>(cursor, end, cursor)};
 }
+
 ParseResult CommandCreator::generateCopyWithinCommand(CommandDetails details, ParsingContext context) {
     // range or custom delimiter
     if (!details.scope.has_value()) {
@@ -420,15 +403,14 @@ ParseResult CommandCreator::generateCopyWithinCommand(CommandDetails details, Pa
             settings.delimiters = m_word_delimiters;
             break;
         }
-
         default: {
             break;
         }
     }
 
     auto [start, end] = SpanResolver::fromScope(context.state, settings);
-    if (static_cast<size_t>(end.column)
-        == context.state.getParagraph(end.row).length() && end.column != 0) {
+    if (static_cast<size_t>(end.column) == context.state.getParagraph(end.row).length()
+        && end.column != 0) {
         end.column--;
     }
 
@@ -443,8 +425,7 @@ ParseResult CommandCreator::gerneratePasteCommand(CommandDetails details, Parsin
     Position cursor = context.state.getCursor().getPosition();
 
     if (!clipboard.has_value()) {
-        return {std::nullopt, make_shared<NotifyAction>(
-            "Nothing to paste! Copy text using the copy operator (y / Y).")};
+        return {std::nullopt, make_shared<NotifyAction>("Nothing to paste! Copy text using y or Y.")};
     }
 
     if (clipboard->type == CopyType::INLINE) {
@@ -459,6 +440,7 @@ ParseResult CommandCreator::gerneratePasteCommand(CommandDetails details, Parsin
 
         return {std::nullopt, make_shared<InsertAction>(clipboard->content, cursor, true)};
     }
-    return emptyParse();
+    
     //paste full line above / below cursor
+    return emptyParse();
 }

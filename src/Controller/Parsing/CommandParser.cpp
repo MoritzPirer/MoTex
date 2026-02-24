@@ -1,5 +1,5 @@
 #include <unordered_map>
-
+#include <functional>
 
 #include "../../../inc/Controller/Parsing/CommandParser.hpp"
 #include "../../../inc/Controller/Parsing/CommandDetails.hpp"
@@ -91,6 +91,12 @@ void CommandParser::parseAsOperator(char input) {
         }}
     };
 
+    if (simple_commands.contains(input)) {
+        m_details = simple_commands.at(input);
+        m_details->is_complete = true;
+        return;
+    }
+
     //operators requiring a second input
     std::unordered_map<char, CommandDetails> compound_commands = {
         {'m', {
@@ -168,12 +174,6 @@ void CommandParser::parseAsOperator(char input) {
         }}
     };
 
-    if (simple_commands.contains(input)) {
-        m_details = simple_commands.at(input);
-        m_details->is_complete = true;
-        return;
-    }
-
     if (compound_commands.contains(input)) {
         m_details = compound_commands.at(input);
         m_details->is_complete = false;
@@ -185,17 +185,9 @@ void CommandParser::parseAsOperator(char input) {
 }
 
 void CommandParser::parseAsParameter(char input) {
-
     //only need to care about compund commands here
-    switch (m_details->operator_type) {
-    
-    // Operators that take a scope or range indicator as a parameter
-    case Operator::DELETE_WITHIN:
-    case Operator::COPY_WITHIN:
-    case Operator::CASE_SET_LOWER:
-    case Operator::CASE_SET_UPPER:
-    case Operator::MOVE_TO_END:
-    case Operator::MOVE_TO_NEXT: {
+
+    auto parseScopeOrRange = [&] () -> void {
         std::optional<Scope> scope = charToScope(input);
         if (scope.has_value()) {
             m_details->scope = scope;
@@ -209,23 +201,31 @@ void CommandParser::parseAsParameter(char input) {
             m_details = std::nullopt;
             m_details->is_complete = false;
         }
-        break;
-    }
+    };
 
-    // Operators that take an argument
-    case Operator::DELETE_UNTIL:
-    case Operator::REPLACE:
-    case Operator::MOVE_TO_FIND:
-    case Operator::FILE_ACTION: {
+    auto parseArgument = [&] () -> void {
         m_details->argument = input;
         m_details->is_complete = true;
-        break;
-    }
-    
-    default: {
-        m_details = std::nullopt;
-    }
+    };
 
+    std::unordered_map<Operator, std::function<void(void)>> parse_styles = {
+        {Operator::DELETE_WITHIN, parseScopeOrRange},
+        {Operator::COPY_WITHIN, parseScopeOrRange},
+        {Operator::CASE_SET_LOWER, parseScopeOrRange},
+        {Operator::CASE_SET_UPPER, parseScopeOrRange},
+        {Operator::MOVE_TO_END, parseScopeOrRange},
+        {Operator::MOVE_TO_NEXT, parseScopeOrRange},
+        {Operator::DELETE_UNTIL, parseArgument},
+        {Operator::REPLACE, parseArgument},
+        {Operator::MOVE_TO_FIND, parseArgument},
+        {Operator::FILE_ACTION, parseArgument},
+    };
+
+    if (parse_styles.contains(m_details->operator_type)) {
+        parse_styles.at(m_details->operator_type)();
+    }
+    else {
+        m_details = std::nullopt;
     }
 }
 

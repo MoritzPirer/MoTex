@@ -11,12 +11,13 @@ Renderer::Renderer(const EditorState& state, const Settings& settings, const Mod
     {}
 
 VisualSegment Renderer::formatParagraphNumber(int current_paragraph, int line_number_width) {
-     if (current_paragraph == m_state.getCursor().getRow()) {
-        return {
-            StringHelpers::leftAlign(std::to_string(current_paragraph + 1), line_number_width - 1)
-                + m_line_number_seperator,
-            TextRole::UI_ELEMENT
-        };
+    if (current_paragraph == m_state.getCursor().getRow()) {
+        std::string aligned_number = StringHelpers::leftAlign(
+            std::to_string(current_paragraph + 1),
+            line_number_width - 1
+        );
+
+        return {aligned_number + m_line_number_seperator, TextRole::UI_ELEMENT};
     }
 
     int display_number;
