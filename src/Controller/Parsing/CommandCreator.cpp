@@ -146,6 +146,9 @@ ParseResult CommandCreator::generateActions(std::optional<CommandDetails> detail
     case Operator::COPY_WITHIN: {
         return generateCopyWithinCommand(*details, context);
     }
+    case Operator::COPY_UNTIL: {
+        return generateCopyUntilCommand(*details, context);
+    }
 
     case Operator::PASTE: {
         return gerneratePasteCommand(*details, context);
@@ -167,6 +170,8 @@ ParseResult CommandCreator::generateHint(CommandDetails details) {
     std::string scope_range_hint = "Enter a scope or range!";
     
     std::unordered_map<Operator, std::string> hints = {
+        {Operator::COPY_UNTIL, "Enter the end of the section to copy!"},
+        {Operator::COPY_WITHIN, "Enter a scope or range to copy!"},
         {Operator::DELETE_UNTIL, "Enter the end of the section to delete!"},
         {Operator::DELETE_WITHIN, "Enter a scope or range to delete!"},
         {Operator::REPLACE, "Enter a character to replace the selected character!"},
@@ -355,8 +360,8 @@ ParseResult CommandCreator::generateDeleteUntilCommand(CommandDetails details, P
     Position cursor = context.state.getCursor().getPosition();
 
     auto [dummy, end] = SpanResolver::fromDelimiter(context.state, {
-        .delimiters = std::string(1, *(details.argument)),
-        .anti_delimiters = getAntiDelimiter(*(details.argument)),
+        .delimiters = getAntiDelimiter(*(details.argument)),
+        .anti_delimiters = std::string(1, *(details.argument)),
         .end_behavior = EndBehavior::STOP_BEFORE_END,
         .paragraph_is_delimiter = false
     });
@@ -418,6 +423,19 @@ ParseResult CommandCreator::generateCopyWithinCommand(CommandDetails details, Pa
         make_shared<CopyAction>(start, end, type),
         make_shared<NotifyAction>("Copied content to clipboard!")
     })};
+}
+
+ParseResult CommandCreator::generateCopyUntilCommand(CommandDetails details, ParsingContext context) {
+    Position cursor = context.state.getCursor().getPosition();
+
+    auto [dummy, end] = SpanResolver::fromDelimiter(context.state, {
+        .delimiters = getAntiDelimiter(*(details.argument)),
+        .anti_delimiters = std::string(1, *(details.argument)),
+        .end_behavior = EndBehavior::STOP_BEFORE_END,
+        .paragraph_is_delimiter = false
+    });
+
+    return {std::nullopt, make_shared<CopyAction>(cursor, end, CopyType::INLINE)};
 }
 
 ParseResult CommandCreator::gerneratePasteCommand(CommandDetails details, ParsingContext context) {

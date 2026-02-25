@@ -37,6 +37,10 @@ private:
     std::vector<std::vector<VisualSegment>> reorganizeMetadataRows(
         std::vector<VisualSegment> ordered_chunks, ScreenSize actual_size);
 
+    VisualSegment formatCurrentParagraphNumber(int current_paragraph, int line_number_width);
+
+    VisualSegment formatNonCurrentParagraphNumber(int current_paragraph, int line_number_width);
+    
     /// @brief formats the paragraph number with the proper padding and absolute or relative number
     VisualSegment formatParagraphNumber(int current_paragraph, int line_number_width);
     

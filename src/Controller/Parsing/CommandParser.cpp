@@ -171,7 +171,11 @@ void CommandParser::parseAsOperator(char input) {
         }},
         {'y', {
             .operator_type = Operator::COPY_WITHIN
+        }},
+        {'Y', {
+            .operator_type = Operator::COPY_UNTIL
         }}
+
     };
 
     if (compound_commands.contains(input)) {
@@ -210,13 +214,14 @@ void CommandParser::parseAsParameter(char input) {
 
     std::unordered_map<Operator, std::function<void(void)>> parse_styles = {
         {Operator::DELETE_WITHIN, parseScopeOrRange},
+        {Operator::DELETE_UNTIL, parseArgument},
+        {Operator::REPLACE, parseArgument},
         {Operator::COPY_WITHIN, parseScopeOrRange},
+        {Operator::COPY_UNTIL, parseArgument},
         {Operator::CASE_SET_LOWER, parseScopeOrRange},
         {Operator::CASE_SET_UPPER, parseScopeOrRange},
         {Operator::MOVE_TO_END, parseScopeOrRange},
         {Operator::MOVE_TO_NEXT, parseScopeOrRange},
-        {Operator::DELETE_UNTIL, parseArgument},
-        {Operator::REPLACE, parseArgument},
         {Operator::MOVE_TO_FIND, parseArgument},
         {Operator::FILE_ACTION, parseArgument},
     };

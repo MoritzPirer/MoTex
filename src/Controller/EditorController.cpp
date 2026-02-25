@@ -23,6 +23,7 @@ EditorController::~EditorController() {
         m_autosaver_thread.join();
     }
 }
+
 void EditorController::startAutoSaveLoop(std::filesystem::path executable_path) {
     if (m_state.getSaveState() == SaveState::SAVED) {
         m_state.registerBackup();
@@ -86,6 +87,7 @@ ScreenSize EditorController::calculateTextAreaSize(const RenderInfo& render_info
 
 void EditorController::mainLoop(std::string executable_path) {
     startAutoSaveLoop(executable_path);
+    
     while (m_state.getIsQuit() == false) {
         ScreenSize total_size = m_ui_handler.screenSize();
         RenderInfo render_info = calculateRenderInfo(total_size);

@@ -35,6 +35,7 @@ enum class Operator {
     UNDO,
     REDO,
     COPY_WITHIN,
+    COPY_UNTIL,
     PASTE
 };
 

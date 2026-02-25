@@ -33,6 +33,7 @@ private:
     ParseResult generateDeleteUntilCommand(CommandDetails details, ParsingContext context);
 
     ParseResult generateCopyWithinCommand(CommandDetails details, ParsingContext context);
+    ParseResult generateCopyUntilCommand(CommandDetails details, ParsingContext context);
     ParseResult gerneratePasteCommand(CommandDetails details, ParsingContext context);
 
     ParseResult generateHint(CommandDetails details);

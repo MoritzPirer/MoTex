@@ -10,16 +10,16 @@ Renderer::Renderer(const EditorState& state, const Settings& settings, const Mod
     m_mode_manager{mode_manager}
     {}
 
-VisualSegment Renderer::formatParagraphNumber(int current_paragraph, int line_number_width) {
-    if (current_paragraph == m_state.getCursor().getRow()) {
-        std::string aligned_number = StringHelpers::leftAlign(
-            std::to_string(current_paragraph + 1),
-            line_number_width - 1
-        );
+VisualSegment Renderer::formatCurrentParagraphNumber(int current_paragraph, int line_number_width) {
+    std::string aligned_number = StringHelpers::leftAlign(
+        std::to_string(current_paragraph + 1),
+        line_number_width - 1
+    );
 
-        return {aligned_number + m_line_number_seperator, TextRole::UI_ELEMENT};
-    }
+    return {aligned_number + m_line_number_seperator, TextRole::UI_ELEMENT};
+}
 
+VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, int line_number_width) {
     int display_number;
     if (m_settings.isEnabled("do_relative_numbers") == true) {
         display_number = std::abs(current_paragraph - m_state.getCursor().getRow());
@@ -37,15 +37,23 @@ VisualSegment Renderer::formatParagraphNumber(int current_paragraph, int line_nu
     };
 }
 
+VisualSegment Renderer::formatParagraphNumber(int current_paragraph, int line_number_width) {
+    if (current_paragraph == m_state.getCursor().getRow()) {
+        return formatCurrentParagraphNumber(current_paragraph, line_number_width);
+    }
+
+    return formatNonCurrentParagraphNumber(current_paragraph, line_number_width);
+}
+
 int Renderer::calculateLineNumberWidth() {
     if (!m_settings.isEnabled("do_numbering") == true) {
         return 0;
     }
 
+    const int c_min_number_area_width = 3;
     int longest_number_length = std::to_string(m_state.getNumberOfParagrahps() + 1).length();
-    int min_number_area_width = 3;
 
-    return std::max(min_number_area_width, longest_number_length + 1) + 1;
+    return std::max(c_min_number_area_width, longest_number_length + 1) + 1;
 }
 
 vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) {
@@ -57,7 +65,7 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
 
     int numbering_width = calculateLineNumberWidth();
     string empty_numbering(numbering_width - 1, ' ');
-    empty_numbering += '|';
+    empty_numbering += m_line_number_seperator;
 
     Position first_visible = m_state.getFirstVisibleChar(text_area_size);
     int current_paragraph = first_visible.row;
@@ -103,7 +111,6 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
 }
 
 vector<VisualSegment> Renderer::getSeperatorChunks(ScreenSize actual_size) {
-
     return { VisualSegment{
         string(actual_size.width - 1, (m_settings.isEnabled("show_seperator") ? '-' : ' ')),
         TextRole::UI_ELEMENT
@@ -116,6 +123,7 @@ vector<VisualSegment> Renderer::getCharacterCountChunks() {
     }
 
     int character_count = m_state.getNumberOfCharacters();
+
     return {
         {"Character(s): ", TextRole::TEXT_NORMAL},
         {std::to_string(character_count), TextRole::TEXT_HIGHLIGHT}
@@ -128,6 +136,7 @@ vector<VisualSegment> Renderer::getWordCountChunks() {
     }
 
     int word_count = m_state.getNumberOfWords();
+
     return {
         {"Word(s): ", TextRole::TEXT_NORMAL},
         {std::to_string(word_count), TextRole::TEXT_HIGHLIGHT}
@@ -140,6 +149,7 @@ vector<VisualSegment> Renderer::getParagraphCountChunks() {
     }
 
     int paragraph_count = m_state.getNumberOfParagrahps();
+
     return {
         {"Paragraph(s): ", TextRole::TEXT_NORMAL},
         {std::to_string(paragraph_count), TextRole::TEXT_HIGHLIGHT}
@@ -150,8 +160,10 @@ vector<VisualSegment> Renderer::getCursorPositionChunks() {
     if (!m_settings.isEnabled("show_cursor_position")) {
         return {};
     }
+
     Position position = m_state.getCursor().getPosition();
-    position.row++;
+    position.row++; // display as 1-indexed
+
     return {
         {"Cursor position: ", TextRole::TEXT_NORMAL},
         {position.format(), TextRole::TEXT_HIGHLIGHT}
@@ -227,26 +239,20 @@ vector<vector<VisualSegment>> Renderer::reorganizeMetadataRows(
     vector<VisualSegment> ordered_chunks, ScreenSize actual_size) {
     
     int row_length = 0;
-    int chunks_in_row = 0;
     vector<vector<VisualSegment>> rows;
     vector<VisualSegment> current_row;
 
     int max_used_width = actual_size.width - 1;
-    int max_chunks_in_row = 900;
 
     for (const VisualSegment& chunk : ordered_chunks) {
-        if (row_length + static_cast<int>(chunk.content.size()) > max_used_width
-            || chunks_in_row >= max_chunks_in_row) {
+        if (row_length + static_cast<int>(chunk.content.size()) > max_used_width) {
             rows.push_back(current_row);
-
             current_row.clear();
             row_length = 0;
-            chunks_in_row = 0;
         }
 
         current_row.push_back(chunk);
         row_length += chunk.content.size();
-        chunks_in_row++;
     }
 
     if (!current_row.empty()) {
@@ -281,7 +287,7 @@ vector<vector<VisualSegment>> Renderer::calculateMetadataRows(ScreenSize actual_
 
 Position Renderer::calculateScreenPositionOfCursor(ScreenSize text_area_size) {
     int screen_row = std::min(
-        text_area_size.height / 2,
+        text_area_size.height / 2, // keep cursor in top half of screen
         m_state.calculateVisualLineOfCursor(text_area_size.width)
     ); 
 
