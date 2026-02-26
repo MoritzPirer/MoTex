@@ -28,13 +28,22 @@ private:
 
     ParseResult generateCaseSetCommand(CommandDetails details, ParsingContext context, Case target_case);
     ParseResult generateFileCommand(CommandDetails details, const Settings& settings);
-    ParseResult generatParagraphCreationCommand(CommandDetails details, ParsingContext context);
+
+    ParseResult generateParagraphCreationCommand(CommandDetails details, ParsingContext context);
+    ParseResult generateParagraphJoinCommand(ParsingContext context);
+    ParseResult generateParagraphSplitCommand(ParsingContext context);
+    
+    ParseResult generateDeleteSingleCommand(CommandDetails details, ParsingContext context);
     ParseResult generateDeleteWithinCommand(CommandDetails details, ParsingContext context);
     ParseResult generateDeleteUntilCommand(CommandDetails details, ParsingContext context);
+    ParseResult generateReplaceCommand(CommandDetails details, ParsingContext context);
 
     ParseResult generateCopyWithinCommand(CommandDetails details, ParsingContext context);
     ParseResult generateCopyUntilCommand(CommandDetails details, ParsingContext context);
     ParseResult gerneratePasteCommand(CommandDetails details, ParsingContext context);
+
+    ParseResult generateIndentCommand(ParsingContext context);
+    ParseResult generateUnindentCommand(ParsingContext context);
 
     ParseResult generateHint(CommandDetails details);
     std::string getAntiDelimiter(char delimiter);

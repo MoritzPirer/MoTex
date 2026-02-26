@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <functional>
 
 #include "../../../inc/Controller/Parsing/CommandCreator.hpp"
 #include "../../../inc/Controller/Parsing/CommandDetails.hpp"
@@ -40,126 +41,43 @@ ParseResult CommandCreator::generateActions(std::optional<CommandDetails> detail
         return generateHint(*details);
     }
 
-    EditorState& state = context.state;
+    std::unordered_map<Operator, std::function<ParseResult(void)>> generators = {
+        {Operator::SWITCH_MODE, [&]() { return ParseResult{ModeType::TYPING_MODE, std::nullopt}; }},
+        {Operator::MOVE_BY_CHARACTER, [&]() { return generateCharacterwiseMove(*details, context.text_area_size); }},
+        {Operator::MOVE_TO_FIND, [&]() { return generateSpanMove(*details, context, EndBehavior::STOP_ON_END); }},
+        {Operator::MOVE_TO_END, [&]() { return generateSpanMove(*details, context, EndBehavior::STOP_BEFORE_END); }},
+        {Operator::MOVE_TO_NEXT, [&]() { return generateSpanMove(*details, context, EndBehavior::STOP_AFTER_END); }},
 
-    switch (details->operator_type) {
-    case Operator::SWITCH_MODE: {
-        return {ModeType::TYPING_MODE, std::nullopt};
+        {Operator::CASE_SET_LOWER, [&]() { return generateCaseSetCommand(*details, context, Case::LOWER_CASE); }},
+        {Operator::CASE_SET_UPPER, [&]() { return generateCaseSetCommand(*details, context, Case::UPPER_CASE); }},
+
+        {Operator::FILE_ACTION, [&]() { return generateFileCommand(*details, context.settings); }},
+
+        {Operator::PARAGRAPH_CREATE, [&]() { return generateParagraphCreationCommand(*details, context); }},
+        {Operator::PARAGRAPH_JOIN, [&]() { return generateParagraphJoinCommand(context); }},
+        {Operator::PARAGRAPH_SPLIT, [&]() { return generateParagraphSplitCommand(context); }},
+
+        {Operator::DELETE_SINGLE, [&]() { return generateDeleteSingleCommand(*details, context); }},
+        {Operator::DELETE_WITHIN, [&]() { return generateDeleteWithinCommand(*details, context); }},
+        {Operator::DELETE_UNTIL, [&]() { return generateDeleteUntilCommand(*details, context); }},
+        {Operator::REPLACE, [&]() { return generateReplaceCommand(*details, context); }},
+        
+        {Operator::COPY_WITHIN, [&]() { return generateCopyWithinCommand(*details, context); }},
+        {Operator::COPY_UNTIL, [&]() { return generateCopyUntilCommand(*details, context); }},
+        {Operator::PASTE, [&]() { return gerneratePasteCommand(*details, context); }},
+
+        {Operator::INDENT, [&]() { return generateIndentCommand(context); }},
+        {Operator::UNINDENT, [&]() { return generateUnindentCommand(context); }},
+
+        {Operator::UNDO, [&]() { return ParseResult{ModeType::TOOL_MODE, make_shared<UndoAction>()}; }},
+        {Operator::REDO, [&]() { return ParseResult{ModeType::TOOL_MODE, make_shared<RedoAction>()}; }},
+    };
+
+    if (generators.contains(details->operator_type)) {
+        return generators.at(details->operator_type)();
     }
 
-    /// Movement
-
-    case Operator::MOVE_BY_CHARACTER: {
-        return generateCharacterwiseMove(*details, context.text_area_size);
-    }
-
-    case Operator::MOVE_TO_FIND: {
-        return generateSpanMove(*details, context, EndBehavior::STOP_ON_END);
-    }
-
-    case Operator::MOVE_TO_END: {
-        return generateSpanMove(*details, context, EndBehavior::STOP_BEFORE_END);
-    }
-
-    case Operator::MOVE_TO_NEXT: {
-        return generateSpanMove(*details, context, EndBehavior::STOP_AFTER_END);
-    }
-
-    /// Editing
-
-    case Operator::DELETE_SINGLE: {
-        Position cursor = state.getCursor().getPosition();
-        return {details->next_mode, make_shared<DeleteAction>(cursor, cursor, cursor)};
-    }
-
-    case Operator::DELETE_WITHIN: {
-        return generateDeleteWithinCommand(*details, context);
-    }
-
-    case Operator::DELETE_UNTIL: {
-        return generateDeleteUntilCommand(*details, context);
-    }
-
-    case Operator::PARAGRAPH_CREATE: {
-        return generatParagraphCreationCommand(*details, context);
-    }
-
-    case Operator::PARAGRAPH_JOIN: {
-        auto [start, end] = SpanResolver::fromScope(state, {
-            .scope = Scope::PARAGRAPH,
-            .size = context.text_area_size,
-            .end_behavior = EndBehavior::STOP_BEFORE_END
-        });
-        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
-            make_shared<SpanMoveAction>(start, end, Direction::RIGHT),
-            make_shared<ParagraphJoiningAction>(context.state.getCursor().getPosition())
-        })};
-    }
-
-    case Operator::PARAGRAPH_SPLIT: {
-        return {ModeType::TOOL_MODE, std::make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition())};
-    }
-
-    case Operator::REPLACE: {
-        Position cursor = state.getCursor().getPosition();
-        return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
-            make_shared<DeleteAction>(cursor, cursor, cursor),
-            make_shared<InsertAction>(std::vector<std::string>{std::string(1, *(details->argument))}, cursor),
-            make_shared<CharwiseMoveAction>(context.text_area_size, Direction::LEFT)
-        })};
-    }
-
-    case Operator::INDENT: {
-        return {ModeType::TOOL_MODE, 
-            make_shared<IndentAction>(state.getCursor().getRow(), context.settings.getTabWidth())
-        };
-    }
-
-    case Operator::UNINDENT: {
-        return {ModeType::TOOL_MODE, 
-            make_shared<UnindentAction>(context.state.getCursor().getRow(), context.settings.getTabWidth())
-        };
-    }
-
-    case Operator::CASE_SET_LOWER: {
-        return generateCaseSetCommand(*details, context, Case::LOWER_CASE);
-    }
-
-    case Operator::CASE_SET_UPPER: {
-        return generateCaseSetCommand(*details, context, Case::UPPER_CASE);
-    }
-
-    ///
-
-    case Operator::FILE_ACTION: {
-        return generateFileCommand(*details, context.settings);
-    }
-
-    case Operator::UNDO: {
-        return {ModeType::TOOL_MODE, make_shared<UndoAction>()};
-    }
-
-    case Operator::REDO: {
-        return {ModeType::TOOL_MODE, make_shared<RedoAction>()};
-    }
-
-    case Operator::COPY_WITHIN: {
-        return generateCopyWithinCommand(*details, context);
-    }
-    case Operator::COPY_UNTIL: {
-        return generateCopyUntilCommand(*details, context);
-    }
-
-    case Operator::PASTE: {
-        return gerneratePasteCommand(*details, context);
-    }
-
-    default: {
-        return emptyParse();
-    }
-
-    }
-
+    return emptyParse();
 }
 
 ParseResult CommandCreator::emptyParse() {
@@ -192,27 +110,6 @@ ParseResult CommandCreator::generateHint(CommandDetails details) {
 
 ParseResult CommandCreator::generateCharacterwiseMove(CommandDetails details, ScreenSize text_area_size) {
     return {ModeType::TOOL_MODE, make_shared<CharwiseMoveAction>(text_area_size, *details.direction)};
-}
-
-std::string CommandCreator::getAntiDelimiter(char delimiter) {
-    std::unordered_map<char, std::string> indicators = {
-        {'{', "}"},
-        {'}', "{"},
-        {'<', ">"},
-        {'>', "<"},
-        {'[', "]"},
-        {'(', ")"},
-        {')', "("},
-        {']', "["},
-        {'"', "\""},
-        {'\'', "'"},
-    };
-
-    if (indicators.contains(delimiter)) {
-        return indicators.at(delimiter);
-    }
-
-    return "";
 }
 
 ParseResult CommandCreator::generateSpanMove(CommandDetails details, ParsingContext context, EndBehavior end_behavior) {
@@ -301,7 +198,7 @@ ParseResult CommandCreator::generateFileCommand(CommandDetails details, const Se
     return {std::nullopt, make_shared<NotifyAction>(message)};
 }
 
-ParseResult CommandCreator::generatParagraphCreationCommand(CommandDetails details, ParsingContext context) {
+ParseResult CommandCreator::generateParagraphCreationCommand(CommandDetails details, ParsingContext context) {
     auto [start, end] = SpanResolver::fromScope(context.state, {
         .scope = Scope::PARAGRAPH,
         .end_behavior = EndBehavior::STOP_BEFORE_END
@@ -319,6 +216,27 @@ ParseResult CommandCreator::generatParagraphCreationCommand(CommandDetails detai
         make_shared<ParagraphSplittingAction>(end),
         make_shared<CharwiseMoveAction>(context.text_area_size, Direction::RIGHT)
     })};
+}
+
+ParseResult CommandCreator::generateParagraphJoinCommand(ParsingContext context) {
+    auto [start, end] = SpanResolver::fromScope(context.state, {
+        .scope = Scope::PARAGRAPH,
+        .size = context.text_area_size,
+        .end_behavior = EndBehavior::STOP_BEFORE_END
+    });
+
+    return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
+        make_shared<SpanMoveAction>(start, end, Direction::RIGHT),
+        make_shared<ParagraphJoiningAction>(context.state.getCursor().getPosition())
+    })};
+}
+
+ParseResult CommandCreator::generateParagraphSplitCommand(ParsingContext context) {
+    return {ModeType::TOOL_MODE, std::make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition())};
+}
+ParseResult CommandCreator::generateDeleteSingleCommand(CommandDetails details, ParsingContext context) {
+    Position cursor = context.state.getCursor().getPosition();
+    return {details.next_mode, make_shared<DeleteAction>(cursor, cursor, cursor)};
 }
 
 ParseResult CommandCreator::generateDeleteWithinCommand(CommandDetails details, ParsingContext context) {
@@ -367,6 +285,15 @@ ParseResult CommandCreator::generateDeleteUntilCommand(CommandDetails details, P
     });
 
     return {details.next_mode, make_shared<DeleteAction>(cursor, end, cursor)};
+}
+
+ParseResult CommandCreator::generateReplaceCommand(CommandDetails details, ParsingContext context) {
+    Position cursor = context.state.getCursor().getPosition();
+    return {ModeType::TOOL_MODE, make_shared<CompoundAction>(ActionList{
+        make_shared<DeleteAction>(cursor, cursor, cursor),
+        make_shared<InsertAction>(std::vector<std::string>{std::string(1, *details.argument)}, cursor),
+        make_shared<CharwiseMoveAction>(context.text_area_size, Direction::LEFT)
+    })};
 }
 
 ParseResult CommandCreator::generateCopyWithinCommand(CommandDetails details, ParsingContext context) {
@@ -461,4 +388,38 @@ ParseResult CommandCreator::gerneratePasteCommand(CommandDetails details, Parsin
     
     //paste full line above / below cursor
     return emptyParse();
+}
+
+
+ParseResult CommandCreator::generateIndentCommand(ParsingContext context) {
+    int cursor_row = context.state.getCursor().getRow();
+    int tab_width = context.settings.getTabWidth();
+    return {std::nullopt, make_shared<IndentAction>(cursor_row, tab_width)};
+}
+
+ParseResult CommandCreator::generateUnindentCommand(ParsingContext context) {
+    int cursor_row = context.state.getCursor().getRow();
+    int tab_width = context.settings.getTabWidth();
+    return {std::nullopt, make_shared<UnindentAction>(cursor_row, tab_width)};
+}
+
+std::string CommandCreator::getAntiDelimiter(char delimiter) {
+    std::unordered_map<char, std::string> indicators = {
+        {'{', "}"},
+        {'}', "{"},
+        {'<', ">"},
+        {'>', "<"},
+        {'[', "]"},
+        {'(', ")"},
+        {')', "("},
+        {']', "["},
+        {'"', "\""},
+        {'\'', "'"},
+    };
+
+    if (indicators.contains(delimiter)) {
+        return indicators.at(delimiter);
+    }
+
+    return "";
 }
