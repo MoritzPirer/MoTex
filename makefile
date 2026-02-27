@@ -1,5 +1,5 @@
 # Name of your executable
-TARGET = motex
+TARGET = svim
 
 # Detect OS
 UNAME_S := $(shell uname -s)

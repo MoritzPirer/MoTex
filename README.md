@@ -1,10 +1,11 @@
-# MoTex
+# svim
+svim stands for simplified vim. The core goal was to create a commandline text editor that makes it easier to get started than other CLI editors, without sacrificing too much editing power. As the name implies, svim draws heavy inspiration from the vi editor and the vim command grammar.
 
-MoTex is a vim-inspired, solo-developed commandline text editor, created as a learning experience and a passion project. This readme is written for version 0.5.0.
+This readme is written for version 0.5.2.
 
 ## DESIGN PHILOSOPHY
 
-MoTex' goal is simple: lower the skill floor while keeping the skill ceiling high. A minimal amount of shortcuts is needed to get started, and the command grammar is designed to be consistent, intuitive and easy to master. Additionally, multiple planned features will encourage discovering commands to add to your toolbox, rather than having a memorization overhead.
+svims aims to lower the skill floor for users new to the world of cli editors, while keeping the skill ceiling high for those who know what they are doing. A minimal amount of shortcuts is needed to get started, and the command grammar is designed to be consistent, intuitive and easy to master. Additionally, multiple planned features will encourage discovering commands to add to your toolbox, rather than having a memorization overhead.
 
 ## ARCHITECTURE
 
@@ -12,7 +13,7 @@ The under-the-hood architecture is built around a Model-View-Controller architec
 
 ## KEY FEATURES
 
-MoTex displays useful meta information about the file currently being edited:
+svim displays useful meta information about the file currently being edited:
 - the current mode
 - The file currently being edited
 - the save state of the file
@@ -21,13 +22,13 @@ MoTex displays useful meta information about the file currently being edited:
 - the current version of the editor
 - paragraph numbers along the left edge
 
-There are also several quality-of-life features to make using MoTex as smoth as possible. The text history system groups text into words when undoing them to make deleting larger sections of text or undoing large deletions faster. Additionally files are periodically backed up to a fixed location relative to the location of the executable. That way, you never lose more than five minuts of progress.
+There are also several quality-of-life features to make using svim as smooth as possible. The text history system groups text into words when undoing them to make deleting larger sections of text or undoing large deletions faster. Additionally files are periodically backed up to a fixed location relative to the location of the executable. That way, you never lose more than five minuts of progress.
 
 ## GETTING STARTED
 
 ### MINIMUM REQUIRED KNOWLEDGE
 
-To get started with MoTex, you will need to understand the two core modes: TYPING MODE is used for writing and deleting text, whereas TOOL MODE is used for all of MoTex' commands. When in TOOL MODE, press 'i' to enter TYPING MODE. When in TYPING MODE, press the escape key to enter TOOL MODE. Move the cursor with the arrow keys in either mode or, if you are in TOOL MODE, using h (left), j (down), k (up) and l (right). When in TOOL MODE, you can save with !s and quit with !q.
+To get started with svim, you will need to understand the two core modes: TYPING MODE is used for writing and deleting text, whereas TOOL MODE is used for all of svims commands. When in TOOL MODE, press 'i' to enter TYPING MODE. When in TYPING MODE, press the escape key to enter TOOL MODE. Move the cursor with the arrow keys in either mode or, if you are in TOOL MODE, using h (left), j (down), k (up) and l (right). When in TOOL MODE, you can save with !s and quit with !q.
 
 ### EXISTING COMMANDS
 Unless otherwise specified, all commands stay in TOOL MODE.
@@ -80,8 +81,6 @@ SYSTEM operator (!): Accepts one of the following arguments:
 - x: quit without saving
 - s: save
 
-### UPCOMING COMMANDS
-
 DELETE operators (d & D): d (lowercase) accepts a scope or range. That area is deleted. D (uppercase) accepts an argument. The area from the cursor to the next occurence of the argument is deleted (including the argument and the starting position).
 
 CHANGE operators (c & C): c and C work just like d and D, but switches to TYPING MODE.
@@ -89,6 +88,8 @@ CHANGE operators (c & C): c and C work just like d and D, but switches to TYPING
 YANK operators (y & Y): y (lowercase) accepts a scope or range. That area is copied to an internal clipboard. Y (uppercase) accepts an argument. The area from the cursor to the next occurence of the argument is copied to an internal clipboard (including the argument and the starting position).
 
 PASTE operator (p & P): p (lowercase) pastes the contents of the internal clipboard after the cursor, P (uppercase) pastess the contents of the internal clipboard before the cursor.
+
+### UPCOMING OPERATORS
 
 HELP operator (?): Accepts an argument. If that argument is an operator, usage tips for that operator are displayed as a temporary message. If that argument is also a scope or range indicator, that scope or range is explained as well.
 
@@ -102,7 +103,7 @@ BOOKMARK operator (b & B): Accepts an argument. b (lowercase) creates a bookmark
 
 ## Technical Stack
 
-MoTex is written in C++ 20 using the ncurses library for rendering and input handeling. Everything else was built from scratch or uses the C++ standard library.
+Svim is written in C++ 20 using the ncurses library for rendering and input handeling. Everything else was built from scratch or uses the C++ standard library.
 
 ## ROADMAP & LIMITATIONS
 What can it do, what can't it do, what will it be able to do soon
@@ -117,7 +118,11 @@ Some additional features are being considered, but are not guaranteed to be impl
 2. Rendering bold / italics / headings in markdown files
 3. syntax highlighting in code files using an LSP
 4. find and search replace commands
+5. hotloading if the file is changed by an external source while opened in svim
+6. switching between multiple opened files
+7. auto-inserting bullet points / numberings of numbered lists
+8. prefixing some commands with a number to repeat them 
 
-Limitations MoTex has and will have for at least the near future:
+Limitations svim has and will have for at least the near future:
 - no unicode support (ascii only)
 - no interaction with system clipboard 
