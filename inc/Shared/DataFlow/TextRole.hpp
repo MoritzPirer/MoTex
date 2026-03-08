@@ -12,6 +12,8 @@
 enum class TextRole {
     TEXT_NORMAL,
     TEXT_HIGHLIGHT,
+    TEXT_HEADING,
+    TEXT_QUOTE,
     FILE_NEW,
     FILE_CHANGED,
     FILE_SAVED,

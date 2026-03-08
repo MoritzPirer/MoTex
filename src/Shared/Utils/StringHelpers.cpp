@@ -81,3 +81,41 @@ void StringHelpers::lowercase(std::string& str) {
         c = std::tolower(c);
     }
 }
+
+std::optional<char> StringHelpers::firstNonSpace(const std::string& str) {
+    size_t index = str.find_first_not_of(' ');
+
+    if (index == std::string::npos) {
+        return std::nullopt;
+    }
+
+    return str.at(index);
+}
+
+bool StringHelpers::startsWith(const std::string& str, char first) {
+    if (str.empty()) {
+        return false;
+    }
+
+    return str.at(0) == first;
+}
+
+bool StringHelpers::startsWithIgnoringWhitespace(const std::string& str, char first) {
+    size_t index = str.find_first_not_of(' ');
+
+    if (index == std::string::npos) {
+        return false;
+    }
+
+    return str.at(index) == first;
+}
+
+bool StringHelpers::consistsOnlyOfIgnoringWhitespace(const std::string& str, char comparison) {
+    for (char c : str) {
+        if (c != comparison && c != ' ') {
+            return false;
+        }
+    }
+
+    return true;
+}

@@ -275,3 +275,7 @@ void EditorState::clearTemporaryMessages() {
 std::vector<string> EditorState::copyRange(Position start, Position end) {
     return m_file.copyRange(start, end);
 }
+
+bool EditorState::isLastParagraph(int paragraph_index) const {
+    return (static_cast<size_t>(paragraph_index) + 1 >= getNumberOfParagrahps());
+}

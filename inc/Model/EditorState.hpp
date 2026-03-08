@@ -107,6 +107,9 @@ public:
 
     void setClipboard(Clipboard clipboard) { m_clipboard = clipboard; }
     std::optional<Clipboard> getClipboard() const { return m_clipboard; }
+
+
+    bool isLastParagraph(int paragraph_index) const;
 };
 
 #endif //EDITOR_STATE_HPP

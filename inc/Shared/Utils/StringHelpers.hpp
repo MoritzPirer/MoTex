@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace StringHelpers {
 
@@ -47,6 +48,13 @@ namespace StringHelpers {
     void uppercase(std::string& str);
 
     void lowercase(std::string& str);
+
+    std::optional<char> firstNonSpace(const std::string& str);
+
+    bool startsWith(const std::string& str, char first);
+    bool startsWithIgnoringWhitespace(const std::string& str, char first);
+    bool consistsOnlyOfIgnoringWhitespace(const std::string& str, char comparison);
+
 }; //namespace StringHelpers
 
 #endif //STRING_HELPERS_HPP

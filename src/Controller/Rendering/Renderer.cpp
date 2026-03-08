@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "../../../inc/Controller/Rendering/Renderer.hpp"
 #include "../../../inc/Shared/Utils/StringHelpers.hpp"
 #include "../../../inc/Shared/Utils/Version.hpp"
@@ -16,7 +18,7 @@ VisualSegment Renderer::formatCurrentParagraphNumber(int current_paragraph, int 
         line_number_width - 1
     );
 
-    return {aligned_number + m_line_number_seperator, TextRole::UI_ELEMENT};
+    return {aligned_number + c_line_number_seperator, TextRole::UI_ELEMENT};
 }
 
 VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, int line_number_width) {
@@ -30,7 +32,7 @@ VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, i
 
     return {
         StringHelpers::rightAlign(
-            std::to_string(display_number) + m_line_number_seperator,
+            std::to_string(display_number) + c_line_number_seperator,
             line_number_width
         ),
         TextRole::UI_ELEMENT
@@ -65,7 +67,7 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
 
     int numbering_width = calculateLineNumberWidth();
     string empty_numbering(numbering_width - 1, ' ');
-    empty_numbering += m_line_number_seperator;
+    empty_numbering += c_line_number_seperator;
 
     Position first_visible = m_state.getFirstVisibleChar(text_area_size);
     int current_paragraph = first_visible.row;
@@ -296,6 +298,76 @@ Position Renderer::calculateScreenPositionOfCursor(ScreenSize text_area_size) {
     return {screen_row, screen_column};
 }
 
+vector<vector<VisualSegment>> Renderer::renderTextNormal(const vector<string> split_paragraph, int visual_rows_available) {
+    vector<vector<VisualSegment>> segments;
+    for (const string& line : split_paragraph) {
+        if (visual_rows_available > 0) {
+            segments.push_back({VisualSegment{
+                line,
+                TextRole::TEXT_NORMAL
+            }});
+        }
+        
+        visual_rows_available--;
+    }
+
+    return segments;
+}
+
+bool Renderer::isFollowedByUnderline(int paragraph_index) {
+    if (m_state.isLastParagraph(paragraph_index)) {
+        return false;
+    }
+
+    const std::string& next = m_state.getParagraph(paragraph_index + 1);
+
+    return (StringHelpers::consistsOnlyOfIgnoringWhitespace(next, c_underline_indicator)
+        && std::ranges::count(next, c_underline_indicator) >= c_min_underline_count);
+}
+
+bool Renderer::isHeading(int paragraph_index) {
+    return isFollowedByUnderline(paragraph_index)
+        || StringHelpers::startsWith(m_state.getParagraph(paragraph_index), c_heading_indicator);
+}
+
+bool Renderer::isQuote(int paragraph_index) {
+    return StringHelpers::startsWithIgnoringWhitespace(m_state.getParagraph(paragraph_index), c_quote_indicator);
+}
+
+vector<vector<VisualSegment>> Renderer::renderFullLineHighlight(vector<string> split_paragraph, int max_width,
+    int current_paragraph, int visual_rows_available) {
+
+    TextRole text_role = TextRole::TEXT_NORMAL;
+
+    if (isHeading(current_paragraph)) {
+        text_role = TextRole::TEXT_HEADING;
+    }
+    else if (isQuote(current_paragraph)) {
+        text_role = TextRole::TEXT_QUOTE;
+        for (string& line : split_paragraph) {
+            line = StringHelpers::leftAlign(line, max_width);
+        }
+    }
+
+    vector<vector<VisualSegment>> segments;
+    for (const string& line : split_paragraph) {
+        if (visual_rows_available == 0) {
+            break;
+        }
+
+        if (visual_rows_available > 0) {
+            segments.push_back({VisualSegment{
+                line,
+                text_role
+            }});
+        }
+        
+        visual_rows_available--;
+    }
+
+    return segments;
+}
+
 vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_area_size) {
     Position first_visible = m_state.getFirstVisibleChar(text_area_size);
 
@@ -324,16 +396,16 @@ vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_are
         
         is_first_paragraph = false;
 
-        for (const string& line : split) {
-            if (visual_row < text_area_size.height) {
-                visible_rows.push_back({VisualSegment{
-                    line,
-                    TextRole::TEXT_NORMAL
-                }});
-            }
-            visual_row++;
-        }
-    
+        auto temp = renderFullLineHighlight(split,
+            text_area_size.width,
+            current_paragraph,
+            text_area_size.height - visual_row
+        );
+
+        visible_rows.insert(visible_rows.end(), temp.begin(), temp.end());
+
+        visual_row += split.size();
+
         current_paragraph++;
     }
     

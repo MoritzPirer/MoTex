@@ -24,24 +24,30 @@ void UiHandler::setStyle(TextRole role) {
         attron(COLOR_PAIR(2));
         break;
     }
-
+    
     case TextRole::FILE_CHANGED: {
         attron(COLOR_PAIR(3));
         break;
     }
-
+    
     case TextRole::FILE_NEW: {
         attron(COLOR_PAIR(4));
         break;
     }
-
+    
     case TextRole::FILE_SAVED: {
         attron(COLOR_PAIR(5));
         break;
     }
-
+    
+    case TextRole::TEXT_HEADING:
     case TextRole::UI_ELEMENT: {
         attron(COLOR_PAIR(6));
+        break;
+    }
+
+    case TextRole::TEXT_QUOTE: {
+        attron(COLOR_PAIR(7));
         break;
     }
 

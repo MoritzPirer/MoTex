@@ -20,7 +20,11 @@ private:
     const Settings& m_settings;
     const ModeManager& m_mode_manager;
 
-    const char m_line_number_seperator = '|';
+    const char c_line_number_seperator = '|';
+    const char c_underline_indicator = '-';
+    const char c_min_underline_count = 2;
+    const char c_heading_indicator = '#';
+    const char c_quote_indicator = '>';
 
     std::vector<VisualSegment> getSeperatorChunks(ScreenSize actual_size);
     std::vector<VisualSegment> getCharacterCountChunks();
@@ -43,7 +47,16 @@ private:
     
     /// @brief formats the paragraph number with the proper padding and absolute or relative number
     VisualSegment formatParagraphNumber(int current_paragraph, int line_number_width);
-    
+
+    std::vector<std::vector<VisualSegment>> renderTextNormal(const std::vector<std::string> split_paragraph, int visual_rows_available);
+
+    bool isFollowedByUnderline(int paragraph_index);
+    bool isHeading(int paragraph_index);
+    bool isQuote(int paragraph_index);
+
+    std::vector<std::vector<VisualSegment>> renderFullLineHighlight(std::vector<std::string> split_paragraph,
+        int current_paragraph, int max_width, int visual_rows_available);
+
 public:
     Renderer(const EditorState& state, const Settings& settings, const ModeManager& mode_manager);
     Renderer(const Renderer&) = default;
@@ -75,6 +88,7 @@ public:
     std::vector<std::vector<VisualSegment>> calculateVisibleRows(ScreenSize text_area_size);
 
     std::vector<VisualSegment> calculateTemporaryRows(ScreenSize actual_size);
+
 };
 
 #endif //RENDERER_HPP
