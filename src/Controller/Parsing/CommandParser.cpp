@@ -90,7 +90,31 @@ void CommandParser::parseAsOperator(char input) {
         }},
         {'.', {
             .operator_type = Operator::REPEAT
-        }}
+        }},
+        {'H', {
+            .operator_type = Operator::MOVE_TO_NEXT,
+            .direction = Direction::LEFT,
+            .scope = Scope::WORD,
+            .next_mode = ModeType::TOOL_MODE
+        }},
+        {'J', {
+            .operator_type = Operator::MOVE_TO_NEXT,
+            .direction = Direction::RIGHT,
+            .scope = Scope::PARAGRAPH,
+            .next_mode = ModeType::TOOL_MODE
+        }},
+        {'K', {
+            .operator_type = Operator::MOVE_TO_NEXT,
+            .direction = Direction::LEFT,
+            .scope = Scope::PARAGRAPH,
+            .next_mode = ModeType::TOOL_MODE
+        }},
+        {'L', {
+            .operator_type = Operator::MOVE_TO_NEXT,
+            .direction = Direction::RIGHT,
+            .scope = Scope::WORD,
+            .next_mode = ModeType::TOOL_MODE
+        }},
     };
 
     if (simple_commands.contains(input)) {
