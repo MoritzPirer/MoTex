@@ -18,7 +18,7 @@ VisualSegment Renderer::formatCurrentParagraphNumber(int current_paragraph, int 
         line_number_width - 1
     );
 
-    return {aligned_number + c_line_number_seperator, TextRole::PRIMARY_COLOR, TextStyle::makeNormal()};
+    return {aligned_number + c_line_number_seperator, TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()};
 }
 
 VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, int line_number_width) {
@@ -35,7 +35,7 @@ VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, i
             std::to_string(display_number) + c_line_number_seperator,
             line_number_width
         ),
-        TextRole::PRIMARY_COLOR, TextStyle::makeNormal()
+        TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()
     };
 }
 
@@ -77,7 +77,7 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
         
         // end of file
         if (static_cast<size_t>(current_paragraph) >= m_state.getNumberOfParagrahps()) {
-            numbers.push_back({empty_numbering, TextRole::PRIMARY_COLOR, TextStyle::makeNormal()});
+            numbers.push_back({empty_numbering, TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()});
             visual_row++;
             continue;
         }
@@ -101,7 +101,7 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
         for (int _ = drew_number? 1 : 0; _ < lines_needed; _++) {
             visual_row++;
             if (visual_row <= text_area_size.height) {
-                numbers.push_back({empty_numbering, TextRole::PRIMARY_COLOR, TextStyle::makeNormal()});
+                numbers.push_back({empty_numbering, TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()});
             }   
         }
         
@@ -115,7 +115,7 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
 vector<VisualSegment> Renderer::getSeperatorChunks(ScreenSize actual_size) {
     return { VisualSegment{
         string(actual_size.width - 1, (m_settings.isEnabled("show_seperator") ? '-' : ' ')),
-        TextRole::PRIMARY_COLOR, TextStyle::makeNormal()
+        TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()
     }};
 }
 
@@ -128,8 +128,8 @@ vector<VisualSegment> Renderer::getCharacterCountChunks() {
     std::string count_string = StringHelpers::addSeperators(character_count, 3);
 
     return {
-        {"Character(s): ", TextRole::TEXT_COLOR, TextStyle::makeNormal()},
-        {count_string, TextRole::ACCENT_COLOR, TextStyle::makeItalic()}
+        {"Character(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
     };
 }
 
@@ -142,8 +142,8 @@ vector<VisualSegment> Renderer::getWordCountChunks() {
     std::string count_string = StringHelpers::addSeperators(word_count, 3);
 
     return {
-        {"Word(s): ", TextRole::TEXT_COLOR, TextStyle::makeNormal()},
-        {count_string, TextRole::ACCENT_COLOR, TextStyle::makeItalic()}
+        {"Word(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
     };
 }
 
@@ -156,8 +156,8 @@ vector<VisualSegment> Renderer::getParagraphCountChunks() {
     std::string count_string = StringHelpers::addSeperators(paragraph_count, 3);
 
     return {
-        {"Paragraph(s): ", TextRole::TEXT_COLOR, TextStyle::makeNormal()},
-        {count_string, TextRole::ACCENT_COLOR, TextStyle::makeItalic()}
+        {"Paragraph(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
     };
 }
 
@@ -170,8 +170,8 @@ vector<VisualSegment> Renderer::getCursorPositionChunks() {
     position.row++; // display as 1-indexed
 
     return {
-        {"Cursor position: ", TextRole::TEXT_COLOR, TextStyle::makeNormal()},
-        {position.format(), TextRole::ACCENT_COLOR, TextStyle::makeItalic()}
+        {"Cursor position: ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {position.format(), TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
     };
 }
 
@@ -180,7 +180,7 @@ vector<VisualSegment> Renderer::getFileNameChunks() {
         return {};
     }
 
-    return {{"Currently editing " + m_state.getFileName(), TextRole::TEXT_COLOR, TextStyle::makeNormal()}};
+    return {{"Currently editing " + m_state.getFileName(), TextRole::NORMAL_TEXT, TextStyle::makeNormal()}};
 }
 
 vector<VisualSegment> Renderer::getSaveIconChunks() {
@@ -228,7 +228,7 @@ vector<VisualSegment> Renderer::getVersionChunks() {
         return {};
     }
 
-    return {{VERSION, TextRole::TEXT_COLOR, TextStyle::makeNormal()}};
+    return {{VERSION, TextRole::NORMAL_TEXT, TextStyle::makeNormal()}};
 }
 
 
@@ -237,7 +237,7 @@ vector<VisualSegment> Renderer::getEditorModeChunks() {
         return {};
     }
 
-    return {{m_mode_manager.getModeLabel(), TextRole::ACCENT_COLOR, TextStyle::makeNormal()}};
+    return {{m_mode_manager.getModeLabel(), TextRole::WEAK_HIGHLIGHT, TextStyle::makeNormal()}};
 }
 
 vector<vector<VisualSegment>> Renderer::reorganizeMetadataRows(
@@ -273,7 +273,7 @@ vector<vector<VisualSegment>> Renderer::calculateMetadataRows(ScreenSize actual_
     auto addContent = [&](const vector<VisualSegment>& chunks, bool supress_divider = false) {
         ordered_chunks.insert(ordered_chunks.end(), chunks.begin(), chunks.end());
         if (chunks.size() != 0 && !supress_divider) {
-            ordered_chunks.push_back({" | ", TextRole::TEXT_COLOR, TextStyle::makeNormal()});
+            ordered_chunks.push_back({" | ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()});
         }
     };
     
@@ -301,23 +301,6 @@ Position Renderer::calculateScreenPositionOfCursor(ScreenSize text_area_size) {
     return {screen_row, screen_column};
 }
 
-vector<vector<VisualSegment>> Renderer::renderTextNormal(const vector<string> split_paragraph, int visual_rows_available) {
-    vector<vector<VisualSegment>> segments;
-    for (const string& line : split_paragraph) {
-        if (visual_rows_available > 0) {
-            segments.push_back({VisualSegment{
-                line,
-                TextRole::TEXT_COLOR,
-                TextStyle::makeNormal()
-            }});
-        }
-        
-        visual_rows_available--;
-    }
-
-    return segments;
-}
-
 bool Renderer::isFollowedByUnderline(int paragraph_index) {
     if (m_state.isLastParagraph(paragraph_index)) {
         return false;
@@ -338,16 +321,27 @@ bool Renderer::isQuote(int paragraph_index) {
     return StringHelpers::startsWithIgnoringWhitespace(m_state.getParagraph(paragraph_index), c_quote_indicator);
 }
 
-vector<vector<VisualSegment>> Renderer::renderFullLineHighlight(vector<string> split_paragraph, int max_width,
+TextRole Renderer::getTextRole(int current_paragraph) {
+    if (isHeading(current_paragraph)) {
+        return TextRole::WEAK_HIGHLIGHT;
+    }
+
+    if (isQuote(current_paragraph)) {
+        return TextRole::STRONG_HIGHLIGHT;
+    }
+
+    return TextRole::NORMAL_TEXT;
+}
+
+vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_paragraph, int max_width,
     int current_paragraph, int visual_rows_available) {
 
-    TextRole text_role = TextRole::TEXT_COLOR;
-
-    if (isHeading(current_paragraph)) {
-        text_role = TextRole::ACCENT_COLOR;
+    TextRole text_role = TextRole::NORMAL_TEXT;
+    if (m_state.getFileName().ends_with(".md")) {
+        text_role = getTextRole(current_paragraph);
     }
-    else if (isQuote(current_paragraph)) {
-        text_role = TextRole::BACKGROUND_HIGHLIGHT;
+
+    if (text_role == TextRole::STRONG_HIGHLIGHT) {
         for (string& line : split_paragraph) {
             line = StringHelpers::leftAlign(line, max_width);
         }
@@ -380,7 +374,6 @@ vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_are
     vector<vector<VisualSegment>> visible_rows;    
     visible_rows.reserve(text_area_size.height);
 
-    bool do_syntax_highlighting = (m_state.getFileName().ends_with(".md"));
 
     bool is_first_paragraph = true;
     for (int visual_row = 0; visual_row < text_area_size.height;) {
@@ -388,7 +381,7 @@ vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_are
         if (static_cast<size_t>(current_paragraph) >= m_state.getNumberOfParagrahps()) { 
             visible_rows.push_back({VisualSegment{
                 "~",
-                TextRole::ACCENT_COLOR,
+                TextRole::WEAK_HIGHLIGHT,
                 TextStyle::makeNormal()
             }}); // FUTURE: load placeholder line from settings
 
@@ -405,18 +398,11 @@ vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_are
         is_first_paragraph = false;
 
         vector<vector<VisualSegment>> temp;
-        if (do_syntax_highlighting) {
-            temp = renderFullLineHighlight(split,
-                text_area_size.width,
-                current_paragraph,
-                text_area_size.height - visual_row
-            );
-        }
-        else {
-            temp = renderTextNormal(split,
-                text_area_size.height - visual_row
-            );
-        }
+        temp = renderHighlights(split,
+            text_area_size.width,
+            current_paragraph,
+            text_area_size.height - visual_row
+        );
 
         visible_rows.insert(visible_rows.end(), temp.begin(), temp.end());
         visual_row += split.size();
@@ -438,7 +424,7 @@ vector<VisualSegment> Renderer::calculateTemporaryRows(ScreenSize actual_size) {
         for (const string& message_row : StringHelpers::splitIntoRows(message, 0, actual_size.width - 1)) {
             chunks.push_back({
                 StringHelpers::leftAlign(message_row, actual_size.width),
-                TextRole::ACCENT_COLOR,
+                TextRole::WEAK_HIGHLIGHT,
                 TextStyle::makeNormal()
             });
         }

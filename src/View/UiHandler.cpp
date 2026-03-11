@@ -26,12 +26,12 @@ void UiHandler::setRole(TextRole role) {
     attrset(A_NORMAL);
     
     switch (role) {
-    case TextRole::TEXT_COLOR: {
+    case TextRole::NORMAL_TEXT: {
         attron(COLOR_PAIR(1));
         break;
     }
 
-    case TextRole::ACCENT_COLOR: {
+    case TextRole::WEAK_HIGHLIGHT: {
         attron(COLOR_PAIR(2));
         break;
     }
@@ -51,12 +51,12 @@ void UiHandler::setRole(TextRole role) {
         break;
     }
     
-    case TextRole::PRIMARY_COLOR: {
+    case TextRole::MEDIUM_HIGHLIGHT: {
         attron(COLOR_PAIR(6));
         break;
     }
 
-    case TextRole::BACKGROUND_HIGHLIGHT: {
+    case TextRole::STRONG_HIGHLIGHT: {
         attron(COLOR_PAIR(7));
         break;
     }
@@ -73,7 +73,7 @@ void UiHandler::renderTextArea(const RenderInfo& render_info) {
                 setRole(role);
             }
             else {
-                setRole(TextRole::TEXT_COLOR);
+                setRole(TextRole::NORMAL_TEXT);
             }
             setStyle(style);
             
@@ -95,7 +95,7 @@ void UiHandler::renderOverlay(const RenderInfo& render_info) {
             setRole(role);
         }
         else {
-            setRole(TextRole::TEXT_COLOR);
+            setRole(TextRole::NORMAL_TEXT);
         }
 
         setStyle(style);
@@ -123,7 +123,7 @@ void UiHandler::renderPanel(const RenderInfo& render_info) {
                 setRole(role);
             }
             else {
-                setRole(TextRole::TEXT_COLOR);
+                setRole(TextRole::NORMAL_TEXT);
             }
 
             setStyle(style);
@@ -143,7 +143,7 @@ void UiHandler::renderAside(const RenderInfo& render_info) {
             setRole(role);
         }
         else {
-            setRole(TextRole::TEXT_COLOR);
+            setRole(TextRole::NORMAL_TEXT);
         }
 
         setStyle(style);

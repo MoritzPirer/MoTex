@@ -48,13 +48,13 @@ private:
     /// @brief formats the paragraph number with the proper padding and absolute or relative number
     VisualSegment formatParagraphNumber(int current_paragraph, int line_number_width);
 
-    std::vector<std::vector<VisualSegment>> renderTextNormal(const std::vector<std::string> split_paragraph, int visual_rows_available);
-
     bool isFollowedByUnderline(int paragraph_index);
     bool isHeading(int paragraph_index);
     bool isQuote(int paragraph_index);
 
-    std::vector<std::vector<VisualSegment>> renderFullLineHighlight(std::vector<std::string> split_paragraph,
+    TextRole getTextRole(int current_paragraph);
+
+    std::vector<std::vector<VisualSegment>> renderHighlights(std::vector<std::string> split_paragraph,
         int current_paragraph, int max_width, int visual_rows_available);
 
 public:
