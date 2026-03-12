@@ -9,7 +9,13 @@ UnindentAction::UnindentAction(int row, int indent_width):
 void UnindentAction::apply(ExecutionContext& context) {
     EditorState& state = context.state;
 
-    int leading_spaces = state.getParagraph(m_row).find_first_not_of(' ');
+    size_t after_whitespace = state.getParagraph(m_row).find_first_not_of(' ');
+
+    int leading_spaces = (after_whitespace == std::string::npos) ?
+        state.getParagraph(m_row).length() :
+        after_whitespace;
+
+
     m_spaces_removed = std::min(leading_spaces, m_max_indent_width);
 
     if (m_spaces_removed > 0) {

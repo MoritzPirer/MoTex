@@ -28,7 +28,7 @@ private:
 
     void setRole(TextRole role);
     void setStyle(TextStyle style);
-
+    
     void renderTextArea(const RenderInfo& render_info);
     void renderPanel(const RenderInfo& render_info);
     void renderOverlay(const RenderInfo& render_info);

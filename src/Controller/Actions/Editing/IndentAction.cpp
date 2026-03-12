@@ -10,7 +10,12 @@ IndentAction::IndentAction(int row, int max_indent_width):
 void IndentAction::apply(ExecutionContext& context) {
     EditorState& state = context.state;
 
-    int leading_spaces = state.getParagraph(m_row).find_first_not_of(' ');
+    size_t after_whitespace = state.getParagraph(m_row).find_first_not_of(' ');
+
+    int leading_spaces = (after_whitespace == std::string::npos) ?
+        state.getParagraph(m_row).length() :
+        after_whitespace;
+
     m_spaces_added = m_max_indent_width - (leading_spaces % m_max_indent_width);
 
     for (int _ = 0; _ < m_spaces_added; _++) {
