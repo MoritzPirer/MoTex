@@ -55,7 +55,7 @@ private:
 
     TextRole getTextRole(int current_paragraph);
 
-    std::vector<VisualSegment> renderScreenRow(const std::string& line, TextStyle& style, bool& disable_style_change, TextRole text_role);
+    std::vector<VisualSegment> renderScreenRow(const std::string& line, TextStyle& style, bool& disable_style_change, TextRole text_role, bool& read_partial_modifier);
 
     std::vector<std::vector<VisualSegment>> renderHighlights(std::vector<std::string> split_paragraph, int max_width,
     int current_paragraph, int visual_rows_available, int first_visible);

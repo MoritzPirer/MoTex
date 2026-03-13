@@ -333,7 +333,8 @@ TextRole Renderer::getTextRole(int current_paragraph) {
     return TextRole::NORMAL_TEXT;
 }
 
-vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, bool& disable_style_change, TextRole text_role) {
+//MARKER
+vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, bool& disable_style_change, TextRole text_role, bool& read_partial_modifier) {
     vector<VisualSegment> line_segments;
     string current_chunk;
     bool processing_asterisks = false;
@@ -362,12 +363,15 @@ vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& s
         current_chunk += c;
         
         if (is_asterisk) {
-            if (i + 1 < line.length() && line.at(i + 1) == c_textstyle_modifier) {
+            if ((i == 0 && read_partial_modifier)
+                || (i + 1 < line.length() && line.at(i + 1) == c_textstyle_modifier)) {
+                read_partial_modifier = false;
                 style.toggleBold();
                 current_chunk += line.at(++i);
             }
             else {
                 style.toggleItalic();
+                read_partial_modifier = true;
             }
         }
     }
@@ -419,12 +423,13 @@ vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_pa
         }
     }
 
+    bool read_partial_modifier = false;
     for (const string& line : split_paragraph) {
         if (visual_rows_available <= 0) {
             break;
         }
 
-        segments.push_back(renderScreenRow(line, style, disable_style_change, text_role));
+        segments.push_back(renderScreenRow(line, style, disable_style_change, text_role, read_partial_modifier));
         visual_rows_available--;
     }
 
