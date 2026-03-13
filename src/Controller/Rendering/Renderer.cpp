@@ -333,13 +333,24 @@ TextRole Renderer::getTextRole(int current_paragraph) {
     return TextRole::NORMAL_TEXT;
 }
 
-vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, TextRole text_role) {
+vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, bool& disable_style_change, TextRole text_role) {
     vector<VisualSegment> line_segments;
     string current_chunk;
     bool processing_asterisks = false;
 
     for (size_t i = 0; i < line.length(); ++i) {
         char c = line.at(i);
+        if (line.at(i) == '`') {
+            disable_style_change = !disable_style_change;
+            current_chunk += c;
+            continue;
+        }
+
+        if (disable_style_change) {
+            current_chunk += c;
+            continue;
+        }
+
         bool is_asterisk = (c == c_textstyle_modifier);
 
         if (!current_chunk.empty() && is_asterisk != processing_asterisks) {
@@ -382,11 +393,21 @@ vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_pa
         }
     }
 
+    bool disable_style_change = false;
     vector<vector<VisualSegment>> segments;
     TextStyle style = TextStyle::makeNormal();
     const std::string& paragraph = m_state.getParagraph(current_paragraph);
 
     for (int i = 0; i < first_visible && static_cast<size_t>(i) < paragraph.length(); i++) {
+        if (paragraph.at(i) == '`') {
+            disable_style_change = !disable_style_change;
+            continue;
+        }
+
+        if (disable_style_change) {
+            continue;
+        }
+
         if (paragraph.at(i) == c_textstyle_modifier) {
             if (static_cast<size_t>(i) + 1 < paragraph.length() && paragraph.at(i + 1) == c_textstyle_modifier) {
                 style.toggleBold();
@@ -403,7 +424,7 @@ vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_pa
             break;
         }
 
-        segments.push_back(renderScreenRow(line, style, text_role));
+        segments.push_back(renderScreenRow(line, style, disable_style_change, text_role));
         visual_rows_available--;
     }
 

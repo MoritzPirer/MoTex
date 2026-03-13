@@ -1,5 +1,5 @@
 # strato
-
+normal text `in backticks **not bold **`
 Strato is a commandline text editor, named after the stratosphere because it is the first step into the endless universe of commandline editors. It is intended as a stepping stone - the aim is:
 - being easy to get started for folks new to commandline editors
 - making it easy to get familiar with stratos command grammer to go from novice to experienced
