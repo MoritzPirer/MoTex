@@ -333,7 +333,7 @@ TextRole Renderer::getTextRole(int current_paragraph) {
     return TextRole::NORMAL_TEXT;
 }
 
-vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, bool& disable_style_change, TextRole text_role, bool& read_partial_modifier) {
+vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, TextRole text_role, EscapeState& escape_state) {
     vector<VisualSegment> line_segments;
     string current_chunk;
     bool processing_asterisks = false;
@@ -341,23 +341,25 @@ vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& s
     for (size_t i = 0; i < line.length(); ++i) {
         char c = line.at(i);
         
-        if (c == '\\') {
-            current_chunk += c;
-            i++;
-            if (i < line.length()) {
-                current_chunk += line.at(i);
-            }
-
-            continue;
-        }
-
-        if (c == c_modifier_blocker) {
-            disable_style_change = !disable_style_change;
+        if (escape_state.has_read_escape_char) {
+            escape_state.has_read_escape_char = false;
             current_chunk += c;
             continue;
         }
 
-        if (disable_style_change) {
+        if (c == c_style_change_blocker) {
+            escape_state.is_style_change_disabled = !escape_state.is_style_change_disabled;
+            current_chunk += c;
+            continue;
+        }
+
+        if (escape_state.is_style_change_disabled) {
+            current_chunk += c;
+            continue;
+        }
+
+        if (c == c_escape_char) {
+            escape_state.has_read_escape_char = true;
             current_chunk += c;
             continue;
         }
@@ -373,15 +375,15 @@ vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& s
         current_chunk += c;
         
         if (is_asterisk) {
-            if ((i == 0 && read_partial_modifier)
+            if ((i == 0 && escape_state.has_read_partial_modifier)
                 || (i + 1 < line.length() && line.at(i + 1) == c_textstyle_modifier)) {
-                read_partial_modifier = false;
+                escape_state.has_read_partial_modifier = false;
                 style.toggleBold();
                 current_chunk += line.at(++i);
             }
             else {
                 style.toggleItalic();
-                read_partial_modifier = true;
+                escape_state.has_read_partial_modifier = true;
             }
         }
     }
@@ -407,21 +409,31 @@ vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_pa
         }
     }
 
-    bool disable_style_change = false;
+    EscapeState escape_state = {
+        .is_style_change_disabled = false,
+        .has_read_partial_modifier = false,
+        .has_read_escape_char = false
+    };
+
     vector<vector<VisualSegment>> segments;
     TextStyle style = TextStyle::makeNormal();
     const std::string& paragraph = m_state.getParagraph(current_paragraph);
 
     for (int i = 0; i < first_visible && static_cast<size_t>(i) < paragraph.length(); i++) {
-        if (paragraph.at(i) == c_modifier_blocker) {
-            disable_style_change = !disable_style_change;
+        if (paragraph.at(i) == c_style_change_blocker) {
+            escape_state.is_style_change_disabled = !escape_state.is_style_change_disabled;
             continue;
         }
 
-        if (disable_style_change) {
+        if (escape_state.is_style_change_disabled) {
             continue;
         }
-
+        
+        if (paragraph.at(i) == c_escape_char) {
+            i++;
+            continue;
+        }
+        
         if (paragraph.at(i) == c_textstyle_modifier) {
             if (static_cast<size_t>(i) + 1 < paragraph.length() && paragraph.at(i + 1) == c_textstyle_modifier) {
                 style.toggleBold();
@@ -433,13 +445,13 @@ vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_pa
         }
     }
 
-    bool read_partial_modifier = false;
+    escape_state.has_read_partial_modifier = false;
     for (const string& line : split_paragraph) {
         if (visual_rows_available <= 0) {
             break;
         }
 
-        segments.push_back(renderScreenRow(line, style, disable_style_change, text_role, read_partial_modifier));
+        segments.push_back(renderScreenRow(line, style, text_role, escape_state));
         visual_rows_available--;
     }
 

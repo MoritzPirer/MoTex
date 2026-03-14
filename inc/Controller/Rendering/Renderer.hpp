@@ -13,6 +13,7 @@
 #include "../../Model/EditorState.hpp"
 #include "../Modes/ModeManager.hpp"
 #include "../Services/Settings/Settings.hpp"
+#include "EscapeState.hpp"
 
 class Renderer {
 private:
@@ -26,7 +27,8 @@ private:
     const char c_heading_indicator = '#';
     const char c_quote_indicator = '>';
     const char c_textstyle_modifier = '*';
-    const char c_modifier_blocker = '`';
+    const char c_style_change_blocker = '`';
+    const char c_escape_char = '\\';
 
     std::vector<VisualSegment> getSeperatorChunks(ScreenSize actual_size);
     std::vector<VisualSegment> getCharacterCountChunks();
@@ -56,7 +58,7 @@ private:
 
     TextRole getTextRole(int current_paragraph);
 
-    std::vector<VisualSegment> renderScreenRow(const std::string& line, TextStyle& style, bool& disable_style_change, TextRole text_role, bool& read_partial_modifier);
+    std::vector<VisualSegment> renderScreenRow(const std::string& line, TextStyle& style, TextRole text_role, EscapeState& escape_state);
 
     std::vector<std::vector<VisualSegment>> renderHighlights(std::vector<std::string> split_paragraph, int max_width,
     int current_paragraph, int visual_rows_available, int first_visible);
