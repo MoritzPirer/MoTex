@@ -333,7 +333,6 @@ TextRole Renderer::getTextRole(int current_paragraph) {
     return TextRole::NORMAL_TEXT;
 }
 
-//MARKER
 vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, bool& disable_style_change, TextRole text_role, bool& read_partial_modifier) {
     vector<VisualSegment> line_segments;
     string current_chunk;
@@ -341,7 +340,18 @@ vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& s
 
     for (size_t i = 0; i < line.length(); ++i) {
         char c = line.at(i);
-        if (line.at(i) == '`') {
+        
+        if (c == '\\') {
+            current_chunk += c;
+            i++;
+            if (i < line.length()) {
+                current_chunk += line.at(i);
+            }
+
+            continue;
+        }
+
+        if (c == c_modifier_blocker) {
             disable_style_change = !disable_style_change;
             current_chunk += c;
             continue;
@@ -403,7 +413,7 @@ vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_pa
     const std::string& paragraph = m_state.getParagraph(current_paragraph);
 
     for (int i = 0; i < first_visible && static_cast<size_t>(i) < paragraph.length(); i++) {
-        if (paragraph.at(i) == '`') {
+        if (paragraph.at(i) == c_modifier_blocker) {
             disable_style_change = !disable_style_change;
             continue;
         }
@@ -458,20 +468,22 @@ vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_are
             continue;
         }
 
+        int start_column = (is_first_paragraph? first_visible.column : 0);
+        is_first_paragraph = false;
+
         vector<string> split = StringHelpers::splitIntoRows(
             m_state.getParagraph(current_paragraph),
-            (is_first_paragraph? first_visible.column : 0),
+            start_column,
             text_area_size.width 
         );
         
-        is_first_paragraph = false;
 
         vector<vector<VisualSegment>> temp;
         temp = renderHighlights(split,
             text_area_size.width,
             current_paragraph,
             text_area_size.height - visual_row,
-            first_visible.column
+            start_column
         );
 
         visible_rows.insert(visible_rows.end(), temp.begin(), temp.end());

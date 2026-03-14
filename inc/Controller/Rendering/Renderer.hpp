@@ -26,6 +26,7 @@ private:
     const char c_heading_indicator = '#';
     const char c_quote_indicator = '>';
     const char c_textstyle_modifier = '*';
+    const char c_modifier_blocker = '`';
 
     std::vector<VisualSegment> getSeperatorChunks(ScreenSize actual_size);
     std::vector<VisualSegment> getCharacterCountChunks();

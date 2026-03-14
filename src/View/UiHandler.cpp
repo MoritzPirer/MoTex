@@ -13,6 +13,9 @@ void UiHandler::writeString(const std::string& content) {
 
 void UiHandler::setStyle(TextStyle style) {
     // don't reset to keep textrole
+    attroff(A_BOLD);
+    attroff(A_ITALIC);
+    
     if (style.is_bold) {
         attron(A_BOLD);
     }
