@@ -22,13 +22,6 @@ private:
     const ModeManager& m_mode_manager;
 
     const char c_line_number_seperator = '|';
-    const char c_underline_indicator = '-';
-    const char c_min_underline_count = 2;
-    const char c_heading_indicator = '#';
-    const char c_quote_indicator = '>';
-    const char c_textstyle_modifier = '*';
-    const char c_style_change_blocker = '`';
-    const char c_escape_char = '\\';
 
     std::vector<VisualSegment> getSeperatorChunks(ScreenSize actual_size);
     std::vector<VisualSegment> getCharacterCountChunks();
@@ -51,17 +44,6 @@ private:
     
     /// @brief formats the paragraph number with the proper padding and absolute or relative number
     VisualSegment formatParagraphNumber(int current_paragraph, int line_number_width);
-
-    bool isFollowedByUnderline(int paragraph_index);
-    bool isHeading(int paragraph_index);
-    bool isQuote(int paragraph_index);
-
-    TextRole getTextRole(int current_paragraph);
-
-    std::vector<VisualSegment> renderScreenRow(const std::string& line, TextStyle& style, TextRole text_role, EscapeState& escape_state);
-
-    std::vector<std::vector<VisualSegment>> renderHighlights(std::vector<std::string> split_paragraph, int max_width,
-    int current_paragraph, int visual_rows_available, int first_visible);
 
 public:
     Renderer(const EditorState& state, const Settings& settings, const ModeManager& mode_manager);
@@ -91,7 +73,7 @@ public:
     ///     panel and the line numbers)
     /// @return a vector where each line is a set of VisualSegments that should
     ///     be rendered in a line of the screen
-    std::vector<std::vector<VisualSegment>> calculateVisibleRows(ScreenSize text_area_size);
+    std::vector<std::vector<VisualSegment>> renderVisibleText(ScreenSize text_area_size);
 
     std::vector<VisualSegment> calculateTemporaryRows(ScreenSize actual_size);
 

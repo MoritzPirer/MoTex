@@ -68,7 +68,7 @@ RenderInfo EditorController::calculateRenderInfo(ScreenSize actual_size) {
     };
 
     return {
-        renderer.calculateVisibleRows(text_area_size),
+        renderer.renderVisibleText(text_area_size),
         metadata_rows,
         renderer.calculateLineNumbers(text_area_size),
         renderer.calculateLineNumberWidth(),

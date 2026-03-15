@@ -1,6 +1,8 @@
 #include <algorithm>
 
 #include "../../../inc/Controller/Rendering/Renderer.hpp"
+#include "../../../inc/Controller/Rendering/TextRenderer.hpp"
+
 #include "../../../inc/Shared/Utils/StringHelpers.hpp"
 #include "../../../inc/Shared/Utils/Version.hpp"
 
@@ -12,50 +14,36 @@ Renderer::Renderer(const EditorState& state, const Settings& settings, const Mod
     m_mode_manager{mode_manager}
     {}
 
-VisualSegment Renderer::formatCurrentParagraphNumber(int current_paragraph, int line_number_width) {
-    std::string aligned_number = StringHelpers::leftAlign(
-        std::to_string(current_paragraph + 1),
-        line_number_width - 1
-    );
-
-    return {aligned_number + c_line_number_seperator, TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()};
+vector<vector<VisualSegment>> Renderer::renderVisibleText(ScreenSize text_area_size) {
+    return TextRenderer(m_state).renderVisibleText(text_area_size);
 }
 
-VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, int line_number_width) {
-    int display_number;
-    if (m_settings.isEnabled("do_relative_numbers") == true) {
-        display_number = std::abs(current_paragraph - m_state.getCursor().getRow());
-    }
-    else {
-        display_number = current_paragraph + 1;
+vector<VisualSegment> Renderer::calculateTemporaryRows(ScreenSize actual_size) {
+    vector<VisualSegment> chunks;
+
+    if (!m_state.getTemporaryMessages().empty()) {
+        vector<VisualSegment> seperator_chunks = getSeperatorChunks(actual_size);
+        chunks.insert(chunks.end(), seperator_chunks.begin(), seperator_chunks.end());
     }
 
-    return {
-        StringHelpers::rightAlign(
-            std::to_string(display_number) + c_line_number_seperator,
-            line_number_width
-        ),
+    for (const string& message : m_state.getTemporaryMessages()) {
+        for (const string& message_row : StringHelpers::splitIntoRows(message, 0, actual_size.width - 1)) {
+            chunks.push_back({
+                StringHelpers::leftAlign(message_row, actual_size.width),
+                TextRole::WEAK_HIGHLIGHT,
+                TextStyle::makeNormal()
+            });
+        }
+    }
+
+    return chunks;
+}
+
+vector<VisualSegment> Renderer::getSeperatorChunks(ScreenSize actual_size) {
+    return { VisualSegment{
+        string(actual_size.width - 1, (m_settings.isEnabled("show_seperator") ? '-' : ' ')),
         TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()
-    };
-}
-
-VisualSegment Renderer::formatParagraphNumber(int current_paragraph, int line_number_width) {
-    if (current_paragraph == m_state.getCursor().getRow()) {
-        return formatCurrentParagraphNumber(current_paragraph, line_number_width);
-    }
-
-    return formatNonCurrentParagraphNumber(current_paragraph, line_number_width);
-}
-
-int Renderer::calculateLineNumberWidth() {
-    if (!m_settings.isEnabled("do_numbering") == true) {
-        return 0;
-    }
-
-    const int c_min_number_area_width = 3;
-    int longest_number_length = std::to_string(m_state.getNumberOfParagrahps() + 1).length();
-
-    return std::max(c_min_number_area_width, longest_number_length + 1) + 1;
+    }};
 }
 
 vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) {
@@ -112,67 +100,81 @@ vector<VisualSegment> Renderer::calculateLineNumbers(ScreenSize text_area_size) 
     return numbers;
 }
 
-vector<VisualSegment> Renderer::getSeperatorChunks(ScreenSize actual_size) {
-    return { VisualSegment{
-        string(actual_size.width - 1, (m_settings.isEnabled("show_seperator") ? '-' : ' ')),
+int Renderer::calculateLineNumberWidth() {
+    if (!m_settings.isEnabled("do_numbering") == true) {
+        return 0;
+    }
+
+    const int c_min_number_area_width = 3;
+    int longest_number_length = std::to_string(m_state.getNumberOfParagrahps() + 1).length();
+
+    return std::max(c_min_number_area_width, longest_number_length + 1) + 1;
+}
+
+VisualSegment Renderer::formatParagraphNumber(int current_paragraph, int line_number_width) {
+    if (current_paragraph == m_state.getCursor().getRow()) {
+        return formatCurrentParagraphNumber(current_paragraph, line_number_width);
+    }
+
+    return formatNonCurrentParagraphNumber(current_paragraph, line_number_width);
+}
+
+VisualSegment Renderer::formatCurrentParagraphNumber(int current_paragraph, int line_number_width) {
+    std::string aligned_number = StringHelpers::leftAlign(
+        std::to_string(current_paragraph + 1),
+        line_number_width - 1
+    );
+
+    return {aligned_number + c_line_number_seperator, TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()};
+}
+
+VisualSegment Renderer::formatNonCurrentParagraphNumber(int current_paragraph, int line_number_width) {
+    int display_number;
+    if (m_settings.isEnabled("do_relative_numbers") == true) {
+        display_number = std::abs(current_paragraph - m_state.getCursor().getRow());
+    }
+    else {
+        display_number = current_paragraph + 1;
+    }
+
+    return {
+        StringHelpers::rightAlign(
+            std::to_string(display_number) + c_line_number_seperator,
+            line_number_width
+        ),
         TextRole::MEDIUM_HIGHLIGHT, TextStyle::makeNormal()
-    }};
-}
-
-vector<VisualSegment> Renderer::getCharacterCountChunks() {
-    if (!m_settings.isEnabled("show_character_count")) {
-        return {};
-    }
-
-    int character_count = m_state.getNumberOfCharacters();
-    std::string count_string = StringHelpers::addSeperators(character_count, 3);
-
-    return {
-        {"Character(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
-        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
     };
 }
 
-vector<VisualSegment> Renderer::getWordCountChunks() {
-    if (!m_settings.isEnabled("show_word_count")) {
-        return {};
-    }
+vector<vector<VisualSegment>> Renderer::calculateMetadataRows(ScreenSize actual_size) {
+    vector<VisualSegment> ordered_chunks; 
 
-    int word_count = m_state.getNumberOfWords();
-    std::string count_string = StringHelpers::addSeperators(word_count, 3);
-
-    return {
-        {"Word(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
-        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
+    auto addContent = [&](const vector<VisualSegment>& chunks, bool supress_divider = false) {
+        ordered_chunks.insert(ordered_chunks.end(), chunks.begin(), chunks.end());
+        if (chunks.size() != 0 && !supress_divider) {
+            ordered_chunks.push_back({" | ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()});
+        }
     };
+    
+    addContent(getSeperatorChunks(actual_size), true);
+    addContent(getEditorModeChunks());
+    addContent(getFileNameChunks());
+    addContent(getSaveIconChunks());
+    addContent(getCursorPositionChunks());
+    addContent(getCharacterCountChunks());
+    addContent(getWordCountChunks());
+    addContent(getParagraphCountChunks());
+    addContent(getVersionChunks());
+
+    return reorganizeMetadataRows(ordered_chunks, actual_size);
 }
 
-vector<VisualSegment> Renderer::getParagraphCountChunks() {
-    if (!m_settings.isEnabled("show_paragraph_count")) {
+vector<VisualSegment> Renderer::getEditorModeChunks() {
+    if (!m_settings.isEnabled("show_editor_mode")) {
         return {};
     }
 
-    int paragraph_count = m_state.getNumberOfParagrahps();
-    std::string count_string = StringHelpers::addSeperators(paragraph_count, 3);
-
-    return {
-        {"Paragraph(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
-        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
-    };
-}
-
-vector<VisualSegment> Renderer::getCursorPositionChunks() {
-    if (!m_settings.isEnabled("show_cursor_position")) {
-        return {};
-    }
-
-    Position position = m_state.getCursor().getPosition();
-    position.row++; // display as 1-indexed
-
-    return {
-        {"Cursor position: ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
-        {position.format(), TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
-    };
+    return {{m_mode_manager.getModeLabel(), TextRole::WEAK_HIGHLIGHT, TextStyle::makeNormal()}};
 }
 
 vector<VisualSegment> Renderer::getFileNameChunks() {
@@ -223,21 +225,68 @@ vector<VisualSegment> Renderer::getSaveIconChunks() {
     return {{message, role, TextStyle::makeNormal()}};
 }
 
+vector<VisualSegment> Renderer::getCursorPositionChunks() {
+    if (!m_settings.isEnabled("show_cursor_position")) {
+        return {};
+    }
+
+    Position position = m_state.getCursor().getPosition();
+    position.row++; // display as 1-indexed
+
+    return {
+        {"Cursor position: ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {position.format(), TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
+    };
+}
+
+vector<VisualSegment> Renderer::getCharacterCountChunks() {
+    if (!m_settings.isEnabled("show_character_count")) {
+        return {};
+    }
+
+    int character_count = m_state.getNumberOfCharacters();
+    std::string count_string = StringHelpers::addSeperators(character_count, 3);
+
+    return {
+        {"Character(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
+    };
+}
+
+vector<VisualSegment> Renderer::getWordCountChunks() {
+    if (!m_settings.isEnabled("show_word_count")) {
+        return {};
+    }
+
+    int word_count = m_state.getNumberOfWords();
+    std::string count_string = StringHelpers::addSeperators(word_count, 3);
+
+    return {
+        {"Word(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
+    };
+}
+
+vector<VisualSegment> Renderer::getParagraphCountChunks() {
+    if (!m_settings.isEnabled("show_paragraph_count")) {
+        return {};
+    }
+
+    int paragraph_count = m_state.getNumberOfParagrahps();
+    std::string count_string = StringHelpers::addSeperators(paragraph_count, 3);
+
+    return {
+        {"Paragraph(s): ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()},
+        {count_string, TextRole::WEAK_HIGHLIGHT, TextStyle::makeItalic()}
+    };
+}
+
 vector<VisualSegment> Renderer::getVersionChunks() {
     if (!m_settings.isEnabled("show_version")) {
         return {};
     }
 
     return {{VERSION, TextRole::NORMAL_TEXT, TextStyle::makeNormal()}};
-}
-
-
-vector<VisualSegment> Renderer::getEditorModeChunks() {
-    if (!m_settings.isEnabled("show_editor_mode")) {
-        return {};
-    }
-
-    return {{m_mode_manager.getModeLabel(), TextRole::WEAK_HIGHLIGHT, TextStyle::makeNormal()}};
 }
 
 vector<vector<VisualSegment>> Renderer::reorganizeMetadataRows(
@@ -267,29 +316,6 @@ vector<vector<VisualSegment>> Renderer::reorganizeMetadataRows(
     return rows; 
 }
 
-vector<vector<VisualSegment>> Renderer::calculateMetadataRows(ScreenSize actual_size) {
-    vector<VisualSegment> ordered_chunks; 
-
-    auto addContent = [&](const vector<VisualSegment>& chunks, bool supress_divider = false) {
-        ordered_chunks.insert(ordered_chunks.end(), chunks.begin(), chunks.end());
-        if (chunks.size() != 0 && !supress_divider) {
-            ordered_chunks.push_back({" | ", TextRole::NORMAL_TEXT, TextStyle::makeNormal()});
-        }
-    };
-    
-    addContent(getSeperatorChunks(actual_size), true);
-    addContent(getEditorModeChunks());
-    addContent(getFileNameChunks());
-    addContent(getSaveIconChunks());
-    addContent(getCursorPositionChunks());
-    addContent(getCharacterCountChunks());
-    addContent(getWordCountChunks());
-    addContent(getParagraphCountChunks());
-    addContent(getVersionChunks());
-
-    return reorganizeMetadataRows(ordered_chunks, actual_size);
-}
-
 Position Renderer::calculateScreenPositionOfCursor(ScreenSize text_area_size) {
     int screen_row = std::min(
         text_area_size.height / 2, // keep cursor in top half of screen
@@ -299,230 +325,4 @@ Position Renderer::calculateScreenPositionOfCursor(ScreenSize text_area_size) {
     int screen_column = m_state.getCursor().getColumn() % text_area_size.width;
 
     return {screen_row, screen_column};
-}
-
-bool Renderer::isFollowedByUnderline(int paragraph_index) {
-    if (m_state.isLastParagraph(paragraph_index)) {
-        return false;
-    }
-
-    const std::string& next = m_state.getParagraph(paragraph_index + 1);
-
-    return (StringHelpers::consistsOnlyOfIgnoringWhitespace(next, c_underline_indicator)
-        && std::ranges::count(next, c_underline_indicator) >= c_min_underline_count);
-}
-
-bool Renderer::isHeading(int paragraph_index) {
-    return isFollowedByUnderline(paragraph_index)
-        || StringHelpers::startsWith(m_state.getParagraph(paragraph_index), c_heading_indicator);
-}
-
-bool Renderer::isQuote(int paragraph_index) {
-    return StringHelpers::startsWithIgnoringWhitespace(m_state.getParagraph(paragraph_index), c_quote_indicator);
-}
-
-TextRole Renderer::getTextRole(int current_paragraph) {
-    if (isHeading(current_paragraph)) {
-        return TextRole::WEAK_HIGHLIGHT;
-    }
-
-    if (isQuote(current_paragraph)) {
-        return TextRole::STRONG_HIGHLIGHT;
-    }
-
-    return TextRole::NORMAL_TEXT;
-}
-
-vector<VisualSegment> Renderer::renderScreenRow(const string& line, TextStyle& style, TextRole text_role, EscapeState& escape_state) {
-    vector<VisualSegment> line_segments;
-    string current_chunk;
-    bool processing_asterisks = false;
-
-    for (size_t i = 0; i < line.length(); ++i) {
-        char c = line.at(i);
-        
-        if (escape_state.has_read_escape_char) {
-            escape_state.has_read_escape_char = false;
-            current_chunk += c;
-            continue;
-        }
-
-        if (c == c_style_change_blocker) {
-            escape_state.is_style_change_disabled = !escape_state.is_style_change_disabled;
-            current_chunk += c;
-            continue;
-        }
-
-        if (escape_state.is_style_change_disabled) {
-            current_chunk += c;
-            continue;
-        }
-
-        if (c == c_escape_char) {
-            escape_state.has_read_escape_char = true;
-            current_chunk += c;
-            continue;
-        }
-
-        bool is_asterisk = (c == c_textstyle_modifier);
-
-        if (!current_chunk.empty() && is_asterisk != processing_asterisks) {
-            line_segments.push_back(VisualSegment{current_chunk, text_role, style});
-            current_chunk.clear();
-        }
-
-        processing_asterisks = is_asterisk;
-        current_chunk += c;
-        
-        if (is_asterisk) {
-            if ((i == 0 && escape_state.has_read_partial_modifier)
-                || (i + 1 < line.length() && line.at(i + 1) == c_textstyle_modifier)) {
-                escape_state.has_read_partial_modifier = false;
-                style.toggleBold();
-                current_chunk += line.at(++i);
-            }
-            else {
-                style.toggleItalic();
-                escape_state.has_read_partial_modifier = true;
-            }
-        }
-    }
-
-    if (!current_chunk.empty()) {
-        line_segments.push_back(VisualSegment{current_chunk, text_role, style});
-    }
-
-    return line_segments;
-}
-
-vector<vector<VisualSegment>> Renderer::renderHighlights(vector<string> split_paragraph, int max_width,
-    int current_paragraph, int visual_rows_available, int first_visible) {
-
-    TextRole text_role = TextRole::NORMAL_TEXT;
-    if (m_state.getFileName().ends_with(".md")) {
-        text_role = getTextRole(current_paragraph);
-    }
-
-    if (text_role == TextRole::STRONG_HIGHLIGHT) {
-        for (string& line : split_paragraph) {
-            line = StringHelpers::leftAlign(line, max_width);
-        }
-    }
-
-    EscapeState escape_state = {
-        .is_style_change_disabled = false,
-        .has_read_partial_modifier = false,
-        .has_read_escape_char = false
-    };
-
-    vector<vector<VisualSegment>> segments;
-    TextStyle style = TextStyle::makeNormal();
-    const std::string& paragraph = m_state.getParagraph(current_paragraph);
-
-    for (int i = 0; i < first_visible && static_cast<size_t>(i) < paragraph.length(); i++) {
-        if (paragraph.at(i) == c_style_change_blocker) {
-            escape_state.is_style_change_disabled = !escape_state.is_style_change_disabled;
-            continue;
-        }
-
-        if (escape_state.is_style_change_disabled) {
-            continue;
-        }
-        
-        if (paragraph.at(i) == c_escape_char) {
-            i++;
-            continue;
-        }
-        
-        if (paragraph.at(i) == c_textstyle_modifier) {
-            if (static_cast<size_t>(i) + 1 < paragraph.length() && paragraph.at(i + 1) == c_textstyle_modifier) {
-                style.toggleBold();
-                i++; //consume second modifier
-            }
-            else {
-                style.toggleItalic();
-            }
-        }
-    }
-
-    escape_state.has_read_partial_modifier = false;
-    for (const string& line : split_paragraph) {
-        if (visual_rows_available <= 0) {
-            break;
-        }
-
-        segments.push_back(renderScreenRow(line, style, text_role, escape_state));
-        visual_rows_available--;
-    }
-
-    return segments;
-}
-
-vector<vector<VisualSegment>> Renderer::calculateVisibleRows(ScreenSize text_area_size) {
-    Position first_visible = m_state.getFirstVisibleChar(text_area_size);
-
-    int current_paragraph = first_visible.row;
-    vector<vector<VisualSegment>> visible_rows;    
-    visible_rows.reserve(text_area_size.height);
-
-
-    bool is_first_paragraph = true;
-    for (int visual_row = 0; visual_row < text_area_size.height;) {
-
-        if (static_cast<size_t>(current_paragraph) >= m_state.getNumberOfParagrahps()) { 
-            visible_rows.push_back({VisualSegment{
-                "~",
-                TextRole::WEAK_HIGHLIGHT,
-                TextStyle::makeNormal()
-            }}); // FUTURE: load placeholder line from settings
-
-            visual_row++;
-            continue;
-        }
-
-        int start_column = (is_first_paragraph? first_visible.column : 0);
-        is_first_paragraph = false;
-
-        vector<string> split = StringHelpers::splitIntoRows(
-            m_state.getParagraph(current_paragraph),
-            start_column,
-            text_area_size.width 
-        );
-        
-
-        vector<vector<VisualSegment>> temp;
-        temp = renderHighlights(split,
-            text_area_size.width,
-            current_paragraph,
-            text_area_size.height - visual_row,
-            start_column
-        );
-
-        visible_rows.insert(visible_rows.end(), temp.begin(), temp.end());
-        visual_row += split.size();
-        current_paragraph++;
-    }
-    
-    return visible_rows;
-}
-
-vector<VisualSegment> Renderer::calculateTemporaryRows(ScreenSize actual_size) {
-    vector<VisualSegment> chunks;
-
-    if (!m_state.getTemporaryMessages().empty()) {
-        vector<VisualSegment> seperator_chunks = getSeperatorChunks(actual_size);
-        chunks.insert(chunks.end(), seperator_chunks.begin(), seperator_chunks.end());
-    }
-
-    for (const string& message : m_state.getTemporaryMessages()) {
-        for (const string& message_row : StringHelpers::splitIntoRows(message, 0, actual_size.width - 1)) {
-            chunks.push_back({
-                StringHelpers::leftAlign(message_row, actual_size.width),
-                TextRole::WEAK_HIGHLIGHT,
-                TextStyle::makeNormal()
-            });
-        }
-    }
-
-    return chunks;
 }
