@@ -21,7 +21,7 @@ namespace {
 
     std::ofstream openOutputFile(const TextFile& file) {
         path file_path = file.getFilepath();
-        // Use absolute path to ensure we aren't losing the directory context
+
         path abs_path = std::filesystem::absolute(file_path);
         path parent_directory = abs_path.parent_path();
 
@@ -31,27 +31,10 @@ namespace {
 
         std::ofstream output_file(abs_path.string());
         if (!output_file.is_open()) {
-            throw FileException("Unable to open file "); //'" + abs_path.string() + "'! Error: " + strerror(errno));
+            throw FileException("Unable to open file "); 
         }
-        return output_file; // Should move correctly in C++20
+        return output_file; 
     }
-    // std::ofstream openOutputFile(const TextFile& file) {
-
-    //     path file_path = file.getFilepath();
-    //     path parent_directory = file_path.parent_path();
-
-    //     if (!parent_directory.empty()) {
-    //         std::filesystem::create_directories(parent_directory);
-    //     }
-
-    //     std::ofstream output_file(file.getFilepath().string());
-    
-    //     if (!output_file.is_open()) {
-    //         throw FileException("Unable to open file '" + file_path.string() + "'!");
-    //     }
-
-    //     return output_file;
-    // }
 
     void writeToFile(std::ofstream& output_file, TextFile& file) {
         for (int i = 0; i < file.getNumberOfParagrahps(); i++) {
