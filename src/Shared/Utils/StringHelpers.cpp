@@ -138,3 +138,13 @@ bool StringHelpers::consistsOnlyOfIgnoringWhitespace(const std::string& str, cha
 
     return true;
 }
+
+size_t StringHelpers::countLeadingSpaces(const std::string& str) {
+    size_t index = str.find_first_not_of(' ');
+
+    if (index == std::string::npos) {
+        return 0;
+    }
+    
+    return index;
+}

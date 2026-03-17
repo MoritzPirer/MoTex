@@ -87,7 +87,7 @@ ParseResult TypingMode::parseSpecialKey(SpecialKey key, ParsingContext context) 
     }
 }
 
-bool shouldTrySmartList(ParsingContext context) {
+bool TypingMode::shouldTrySmartList(ParsingContext context) {
     const std::string& file_name = context.state.getFileName();
     return (
         file_name.ends_with(".md")
@@ -113,16 +113,18 @@ ParseResult TypingMode::trySmartListInsertion(ParsingContext context) {
         {"- [x] ", "- [ ] "},
     };
 
-
     for (const auto& [prefix, continuation] : list_types) {
         if (!StringHelpers::startsWithIgnoringWhitespace(current, prefix)) {
             continue;
         }
         
         //TODO account for leading spaces!!!!!
+        size_t leading_spaces = StringHelpers::countLeadingSpaces(current);
+        std::string new_paragraph_prefix = std::string(leading_spaces, ' ') + continuation;
+
         return {
             ModeType::TYPING_MODE,
-            {std::make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition(), continuation)}
+            {std::make_shared<ParagraphSplittingAction>(context.state.getCursor().getPosition(), new_paragraph_prefix)}
         }; 
     }
 
