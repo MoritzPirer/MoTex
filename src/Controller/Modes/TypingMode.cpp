@@ -183,6 +183,18 @@ bool TypingMode::canBeNumberList(const std::string& paragraph) {
 ParseResult TypingMode::getNumberListInsertion(const std::string& paragraph, Position cursor) {
     int numbering_value = getNumberingValue(paragraph);
     char numbering_ender = getNumberingEnder(paragraph);
+
+    if (StringHelpers::countLeadingSpaces(paragraph) + std::to_string(numbering_value).length() + 2 == paragraph.length()) {
+        // if the user presses enter at when the paragraph is only the prefix, the prefix is deleted
+        // To escape from list when no more should be added
+        Position delete_start = {cursor.row, 0};
+
+        //never called for empty paragraph so underflow is not a problem
+        Position delete_end = {cursor.row, static_cast<int>(paragraph.length()) - 1}; 
+
+        return ParseResult{ModeType::TYPING_MODE, std::make_shared<DeleteAction>(delete_start, delete_end, cursor)};
+    }
+
     std::string continuation = std::string(StringHelpers::countLeadingSpaces(paragraph), ' ')
         + std::to_string(numbering_value + 1)
         + numbering_ender

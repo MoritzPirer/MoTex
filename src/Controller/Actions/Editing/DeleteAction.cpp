@@ -31,7 +31,6 @@ void DeleteAction::undo(EditorState& state) {
     }
 
     state.moveCursorTo(m_cursor);
-
     state.requestBackup();
 }
 
