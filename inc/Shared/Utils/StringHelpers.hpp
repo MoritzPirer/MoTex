@@ -61,7 +61,7 @@ namespace StringHelpers {
     bool consistsOnlyOfIgnoringWhitespace(const std::string& str, char comparison);
 
     size_t countLeadingSpaces(const std::string& str);
-
+    size_t findFirstNonDigit(const std::string& str);
 }; //namespace StringHelpers
 
 #endif //STRING_HELPERS_HPP

@@ -29,6 +29,7 @@ void DeleteAction::undo(EditorState& state) {
     else {
         state.insertLines(m_deleted_content, m_start);
     }
+
     state.moveCursorTo(m_cursor);
 
     state.requestBackup();

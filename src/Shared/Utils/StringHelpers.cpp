@@ -148,3 +148,7 @@ size_t StringHelpers::countLeadingSpaces(const std::string& str) {
     
     return index;
 }
+
+size_t StringHelpers::findFirstNonDigit(const std::string& str) {
+    return str.find_first_not_of("0123456789");
+}
